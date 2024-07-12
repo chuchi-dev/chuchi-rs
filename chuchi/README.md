@@ -39,6 +39,8 @@ For more examples look in the examples directory and the test directory.
 ## Api Example
 
 ```rust no_run
+#[cfg(feature = "api")]
+{
 use std::fmt;
 use std::sync::{Arc, Mutex};
 
@@ -147,5 +149,6 @@ async fn main() {
 	server.add_route(set_name);
 
 	server.run().await.unwrap();
+}
 }
 ```
