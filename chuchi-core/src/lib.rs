@@ -1,9 +1,6 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc = include_str!("../README.md")]
 
-/// Reexport the http crate
-pub use http;
-
 pub mod body;
 pub mod header;
 pub use body::Body;

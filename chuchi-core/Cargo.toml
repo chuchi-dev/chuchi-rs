@@ -1,9 +1,9 @@
 [package]
-name = "fire-http-representation"
-description = "Http types for the fire http crate"
-version = "0.4.0"
+name = "chuchi-core"
+description = "Types used in chuchi"
+version = "0.1.0"
 authors = ["Sören Meier <info@s-me.ch>"]
-repository = "https://github.com/fire-lib/fire-http"
+repository = "https://github.com/chuchi-dev/chuchi-rs"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 categories = ["web-programming"]
