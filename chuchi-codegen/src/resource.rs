@@ -2,12 +2,12 @@ use syn::{DeriveInput, Error};
 
 use ::quote::quote;
 
-use crate::util::fire_http_crate_from_any;
+use crate::util::chuchi_crate;
 
 type Result<T> = std::result::Result<T, Error>;
 
 pub fn expand(input: &DeriveInput) -> Result<proc_macro::TokenStream> {
-	let fire = fire_http_crate_from_any()?;
+	let chuchi = chuchi_crate()?;
 
 	let ty = &input.ident;
 
@@ -15,11 +15,11 @@ pub fn expand(input: &DeriveInput) -> Result<proc_macro::TokenStream> {
 	let ty = quote!(#ty #ty_generics);
 
 	let im = quote!(
-		impl<'a, R> #fire::extractor::Extractor<'a, R> for &'a #ty {
+		impl<'a, R> #chuchi::extractor::Extractor<'a, R> for &'a #ty {
 			type Error = std::convert::Infallible;
 			type Prepared = ();
 
-			fn validate(validate: #fire::extractor::Validate<'_>) {
+			fn validate(validate: #chuchi::extractor::Validate<'_>) {
 				assert!(
 					validate.resources.exists::<#ty>(),
 					"Resource {} does not exist",
@@ -28,7 +28,7 @@ pub fn expand(input: &DeriveInput) -> Result<proc_macro::TokenStream> {
 			}
 
 			fn prepare(
-				_prepare: #fire::extractor::Prepare<'_>,
+				_prepare: #chuchi::extractor::Prepare<'_>,
 			) -> std::pin::Pin<
 				Box<
 					dyn std::future::Future<
@@ -40,7 +40,7 @@ pub fn expand(input: &DeriveInput) -> Result<proc_macro::TokenStream> {
 			}
 
 			fn extract(
-				extract: #fire::extractor::Extract<'a, '_, Self::Prepared, R>,
+				extract: #chuchi::extractor::Extract<'a, '_, Self::Prepared, R>,
 			) -> std::result::Result<Self, Self::Error>
 			where
 				Self: Sized,

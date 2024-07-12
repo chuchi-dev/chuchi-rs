@@ -1,9 +1,9 @@
 [package]
-name = "fire-http-codegen"
-description = "Codegen for fire http"
-version = "0.3.0"
+name = "chuchi-codegen"
+description = "Codegen for chuchi"
+version = "0.1.0"
 authors = ["Sören Meier <info@s-me.ch>"]
-repository = "https://github.com/fire-lib/fire-http"
+repository = "https://github.com/chuchi-dev/chuchi-rs"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 categories = ["web-programming"]
@@ -15,7 +15,7 @@ proc-macro = true
 [features]
 json = []
 ws = []
-api = []
+# api = []
 # requires the api feature to be set
 stream = []
 

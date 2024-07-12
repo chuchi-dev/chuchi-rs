@@ -1,5 +1,5 @@
 use crate::route::generate_struct;
-use crate::util::{fire_http_crate, validate_inputs, validate_signature};
+use crate::util::{chuchi_crate, validate_inputs, validate_signature};
 use crate::Args;
 
 use proc_macro2::{Literal, TokenStream};
@@ -7,7 +7,7 @@ use quote::{format_ident, quote};
 use syn::{ItemFn, Result};
 
 pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
-	let fire = fire_http_crate()?;
+	let chuchi = chuchi_crate()?;
 
 	validate_signature(&item.sig)?;
 
@@ -18,14 +18,14 @@ pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
 	let struct_gen = generate_struct(&item);
 
 	let extractor_type =
-		quote!(#fire::extractor::Extractor<#fire::ws::WebSocket>);
+		quote!(#chuchi::extractor::Extractor<#chuchi::ws::WebSocket>);
 
 	let valid_data_fn = {
 		let mut asserts = vec![];
 
 		for (name, ty) in &inputs {
 			asserts.push(quote!({
-				let validate = #fire::extractor::Validate::new(
+				let validate = #chuchi::extractor::Validate::new(
 					#name, params, &mut state, resources
 				);
 
@@ -38,11 +38,11 @@ pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
 		quote!(
 			fn validate_requirements(
 				&self,
-				params: &#fire::routes::ParamsNames,
-				resources: &#fire::resources::Resources
+				params: &#chuchi::routes::ParamsNames,
+				resources: &#chuchi::resources::Resources
 			) {
 				#[allow(unused_mut, dead_code)]
-				let mut state = #fire::state::StateValidation::new();
+				let mut state = #chuchi::state::StateValidation::new();
 
 				#(#asserts)*
 			}
@@ -53,9 +53,9 @@ pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
 		let uri = &args.uri;
 
 		quote!(
-			fn path(&self) -> #fire::routes::RoutePath {
-				#fire::routes::RoutePath {
-					method: Some(#fire::header::Method::GET),
+			fn path(&self) -> #chuchi::routes::RoutePath {
+				#chuchi::routes::RoutePath {
+					method: Some(#chuchi::header::Method::GET),
 					path: #uri.into()
 				}
 			}
@@ -84,7 +84,7 @@ pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
 
 		for (idx, (name, ty)) in inputs.iter().enumerate() {
 			prepare_extractors.push(quote!({
-				let prepare = #fire::extractor::Prepare::new(
+				let prepare = #chuchi::extractor::Prepare::new(
 					#name, &header, &params, &mut state, &resources
 				);
 
@@ -95,9 +95,9 @@ pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
 				match res {
 					Ok(res) => res,
 					Err(e) => {
-						return Some(Err(#fire::Error::new(
-							#fire::extractor::ExtractorError::error_kind(&e),
-							#fire::extractor::ExtractorError::into_std(e)
+						return Some(Err(#chuchi::Error::new(
+							#chuchi::extractor::ExtractorError::error_kind(&e),
+							#chuchi::extractor::ExtractorError::into_std(e)
 						)));
 					}
 				}
@@ -108,7 +108,7 @@ pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
 
 			handler_args_vars.push(quote!(
 				let #var_name = {
-					let extract = #fire::extractor::Extract::new(
+					let extract = #chuchi::extractor::Extract::new(
 						prepared.#i, #name, &mut ws, &params, &state, &resources
 					);
 
@@ -119,7 +119,7 @@ pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
 					match res {
 						Ok(res) => res,
 						Err(err) => {
-							#fire::ws::util::log_extractor_error(err);
+							#chuchi::ws::util::log_extractor_error(err);
 							return
 						}
 					}
@@ -131,23 +131,23 @@ pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
 		quote!(
 			fn call<'a>(
 				&'a self,
-				req: &'a mut #fire::routes::HyperRequest,
+				req: &'a mut #chuchi::routes::HyperRequest,
 				address: std::net::SocketAddr,
-				params: &'a #fire::routes::PathParams,
-				resources: &'a #fire::resources::Resources
-			) -> #fire::util::PinnedFuture<'a,
-				Option<#fire::Result<#fire::Response>>
+				params: &'a #chuchi::routes::PathParams,
+				resources: &'a #chuchi::resources::Resources
+			) -> #chuchi::util::PinnedFuture<'a,
+				Option<#chuchi::Result<#chuchi::Response>>
 			> {
 				#handler_fn
 
-				#fire::util::PinnedFuture::new(async move {
-					let upgrade = #fire::ws::util::upgrade(req);
+				#chuchi::util::PinnedFuture::new(async move {
+					let upgrade = #chuchi::ws::util::upgrade(req);
 					let (on_upgrade, ws_accept) = match upgrade {
 						Ok(o) => o,
 						Err(e) => return Some(Err(e))
 					};
 
-					let header = #fire::ws::util::hyper_req_to_header(req, address);
+					let header = #chuchi::ws::util::hyper_req_to_header(req, address);
 					let header = match header {
 						Ok(h) => h,
 						Err(e) => return Some(Err(e))
@@ -157,16 +157,16 @@ pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
 					let params = params.clone();
 
 					#[allow(unused_mut, dead_code)]
-					let mut state = #fire::state::State::new();
+					let mut state = #chuchi::state::State::new();
 					// prepare extractions
 					let prepared = (0,// this is a placeholder
 						#(#prepare_extractors),*
 					);
 
-					#fire::ws::util::spawn(async move {
+					#chuchi::ws::util::spawn(async move {
 						match on_upgrade.await {
 							Ok(upgraded) => {
-								let ws = #fire::ws::WebSocket::new(
+								let ws = #chuchi::ws::WebSocket::new(
 									upgraded
 								).await;
 								let mut ws = Some(ws);
@@ -177,13 +177,13 @@ pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
 									#(#handler_args),*
 								)#await_kw;
 
-								#fire::ws::util::log_websocket_return(ret);
+								#chuchi::ws::util::log_websocket_return(ret);
 							},
-							Err(e) => #fire::ws::util::upgrade_error(e)
+							Err(e) => #chuchi::ws::util::upgrade_error(e)
 						}
 					});
 
-					Some(Ok(#fire::ws::util::switching_protocols(ws_accept)))
+					Some(Ok(#chuchi::ws::util::switching_protocols(ws_accept)))
 				})
 			}
 		)
@@ -192,7 +192,7 @@ pub(crate) fn expand(args: Args, item: ItemFn) -> Result<TokenStream> {
 	Ok(quote!(
 		#struct_gen
 
-		impl #fire::routes::RawRoute for #struct_name {
+		impl #chuchi::routes::RawRoute for #struct_name {
 			#valid_data_fn
 
 			#path_fn

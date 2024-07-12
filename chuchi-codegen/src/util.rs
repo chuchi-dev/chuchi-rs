@@ -77,49 +77,16 @@ pub(crate) fn validate_inputs(
 	Ok(v)
 }
 
-pub(crate) fn fire_http_crate() -> Result<TokenStream> {
-	let name = crate_name("fire-http")
-		.map_err(|e| Error::new(Span::call_site(), e))?;
+pub(crate) fn chuchi_crate() -> Result<TokenStream> {
+	let name =
+		crate_name("chuchi").map_err(|e| Error::new(Span::call_site(), e))?;
 
 	Ok(match name {
-		// if it get's used inside fire_http it is a test or an example
-		FoundCrate::Itself => quote!(fire_http),
+		// if it get's used inside chuchi it is a test or an example
+		FoundCrate::Itself => quote!(chuchi),
 		FoundCrate::Name(n) => {
 			let ident = Ident::new(&n, Span::call_site());
 			quote!(#ident)
 		}
 	})
-}
-
-#[cfg(feature = "api")]
-pub(crate) fn fire_api_crate() -> Result<TokenStream> {
-	let name = crate_name("fire-http-api")
-		.map_err(|e| Error::new(Span::call_site(), e))?;
-
-	Ok(match name {
-		// if it get's used inside fire_http it is a test or an example
-		FoundCrate::Itself => quote!(fire_http_api),
-		FoundCrate::Name(n) => {
-			let ident = Ident::new(&n, Span::call_site());
-			quote!(#ident)
-		}
-	})
-}
-
-#[cfg(feature = "api")]
-pub(crate) fn fire_http_crate_from_any() -> Result<TokenStream> {
-	let err = match fire_http_crate() {
-		Ok(ok) => return Ok(ok),
-		Err(err) => err,
-	};
-
-	match fire_api_crate() {
-		Ok(ok) => Ok(quote!(#ok::fire)),
-		Err(_) => Err(err),
-	}
-}
-
-#[cfg(not(feature = "api"))]
-pub(crate) fn fire_http_crate_from_any() -> Result<TokenStream> {
-	fire_http_crate()
 }

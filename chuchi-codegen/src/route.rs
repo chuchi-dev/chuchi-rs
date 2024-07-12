@@ -1,4 +1,4 @@
-use crate::util::{fire_http_crate, validate_inputs, validate_signature};
+use crate::util::{chuchi_crate, validate_inputs, validate_signature};
 use crate::Args;
 use crate::{Method, TransformOutput};
 
@@ -12,7 +12,7 @@ pub(crate) fn expand(
 	method: Method,
 	output: TransformOutput,
 ) -> Result<TokenStream> {
-	let fire = fire_http_crate()?;
+	let chuchi = chuchi_crate()?;
 
 	validate_signature(&item.sig)?;
 
@@ -24,7 +24,7 @@ pub(crate) fn expand(
 	let inputs = validate_inputs(item.sig.inputs.iter())?;
 
 	let extractor_type =
-		quote!(#fire::extractor::Extractor<&mut #fire::Request>);
+		quote!(#chuchi::extractor::Extractor<&mut #chuchi::Request>);
 
 	let struct_name = &item.sig.ident;
 	let struct_gen = generate_struct(&item);
@@ -34,7 +34,7 @@ pub(crate) fn expand(
 
 		for (name, ty) in &inputs {
 			asserts.push(quote!({
-				let validate = #fire::extractor::Validate::new(
+				let validate = #chuchi::extractor::Validate::new(
 					#name, params, &mut state, resources
 				);
 
@@ -47,11 +47,11 @@ pub(crate) fn expand(
 		quote!(
 			fn validate_requirements(
 				&self,
-				params: &#fire::routes::ParamsNames,
-				resources: &#fire::resources::Resources
+				params: &#chuchi::routes::ParamsNames,
+				resources: &#chuchi::resources::Resources
 			) {
 				#[allow(unused_mut, dead_code)]
-				let mut state = #fire::state::StateValidation::new();
+				let mut state = #chuchi::state::StateValidation::new();
 
 				#(#asserts)*
 			}
@@ -63,9 +63,9 @@ pub(crate) fn expand(
 		let method = format_ident!("{}", method.as_str());
 
 		quote!(
-			fn path(&self) -> #fire::routes::RoutePath {
-				#fire::routes::RoutePath {
-					method: Some(#fire::header::Method::#method),
+			fn path(&self) -> #chuchi::routes::RoutePath {
+				#chuchi::routes::RoutePath {
+					method: Some(#chuchi::header::Method::#method),
 					path: #uri.into()
 				}
 			}
@@ -97,7 +97,7 @@ pub(crate) fn expand(
 
 		for (i, (name, ty)) in inputs.iter().enumerate() {
 			prepare_extractors.push(quote!({
-				let prepare = #fire::extractor::Prepare::new(
+				let prepare = #chuchi::extractor::Prepare::new(
 					#name, req.header(), params, &mut state, resources
 				);
 
@@ -108,9 +108,9 @@ pub(crate) fn expand(
 				match res {
 					Ok(res) => res,
 					Err(e) => {
-						return Err(#fire::Error::new(
-							#fire::extractor::ExtractorError::error_kind(&e),
-							#fire::extractor::ExtractorError::into_std(e)
+						return Err(#chuchi::Error::new(
+							#chuchi::extractor::ExtractorError::error_kind(&e),
+							#chuchi::extractor::ExtractorError::into_std(e)
 						));
 					}
 				}
@@ -119,7 +119,7 @@ pub(crate) fn expand(
 			let i = Literal::usize_unsuffixed(i + 1);
 
 			call_route_args.push(quote!({
-				let extract = #fire::extractor::Extract::new(
+				let extract = #chuchi::extractor::Extract::new(
 					prepared.#i, #name, &mut req, params, &state, resources
 				);
 
@@ -129,9 +129,9 @@ pub(crate) fn expand(
 
 				match res {
 					Ok(res) => res,
-					Err(err) => return Err(#fire::Error::new(
-						#fire::extractor::ExtractorError::error_kind(&err),
-						#fire::extractor::ExtractorError::into_std(err)
+					Err(err) => return Err(#chuchi::Error::new(
+						#chuchi::extractor::ExtractorError::error_kind(&err),
+						#chuchi::extractor::ExtractorError::into_std(err)
 					))
 				}
 			}));
@@ -139,11 +139,11 @@ pub(crate) fn expand(
 
 		let process_ret_ty = match output {
 			TransformOutput::No => quote!(
-				#fire::into::IntoRouteResult::into_route_result(ret)
+				#chuchi::into::IntoRouteResult::into_route_result(ret)
 			),
 			TransformOutput::Json => quote!(
-				let ret = #fire::json::IntoRouteResult::into_route_result(ret)?;
-				#fire::json::serialize_to_response(&ret)
+				let ret = #chuchi::json::IntoRouteResult::into_route_result(ret)?;
+				#chuchi::json::serialize_to_response(&ret)
 			),
 		};
 
@@ -151,15 +151,15 @@ pub(crate) fn expand(
 			fn call<'a>(
 				&'a self,
 				#[allow(unused_mut)]
-				mut req: &'a mut #fire::Request,
-				params: &'a #fire::routes::PathParams,
-				resources: &'a #fire::resources::Resources
-			) -> #fire::util::PinnedFuture<'a, #fire::Result<#fire::Response>> {
+				mut req: &'a mut #chuchi::Request,
+				params: &'a #chuchi::routes::PathParams,
+				resources: &'a #chuchi::resources::Resources
+			) -> #chuchi::util::PinnedFuture<'a, #chuchi::Result<#chuchi::Response>> {
 				#route_fn
 
-				#fire::util::PinnedFuture::new(async move {
+				#chuchi::util::PinnedFuture::new(async move {
 					#[allow(unused_mut, dead_code)]
-					let mut state = #fire::state::State::new();
+					let mut state = #chuchi::state::State::new();
 
 					// prepare extractions
 					let prepared = (0,// this is a placeholder
@@ -181,7 +181,7 @@ pub(crate) fn expand(
 	Ok(quote!(
 		#struct_gen
 
-		impl #fire::routes::Route for #struct_name {
+		impl #chuchi::routes::Route for #struct_name {
 			#valid_data_fn
 
 			#path_fn
