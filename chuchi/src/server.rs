@@ -10,9 +10,6 @@ use std::sync::Arc;
 use std::task::{Context, Poll};
 
 use crate::body::BodyHttp;
-use hyper_util::rt::{TokioExecutor, TokioIo};
-#[cfg(any(feature = "http1", feature = "http2"))]
-use hyper_util::server::conn::auto::Builder;
 
 use hyper::body::{Body, Frame, Incoming, SizeHint};
 use hyper::service::Service;
@@ -25,6 +22,7 @@ use tokio::net::TcpListener;
 // todo replace this function once hyper-util is ready
 pub(crate) struct Server {
 	listener: TcpListener,
+	#[allow(dead_code)]
 	shared: Arc<ServerShared>,
 }
 
@@ -46,6 +44,9 @@ impl Server {
 
 	#[cfg(any(feature = "http1", feature = "http2"))]
 	pub async fn serve(self) -> Result<()> {
+		use hyper_util::rt::{TokioExecutor, TokioIo};
+		use hyper_util::server::conn::auto::Builder;
+
 		loop {
 			let (stream, address) = self
 				.listener

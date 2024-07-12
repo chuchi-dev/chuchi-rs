@@ -2,7 +2,6 @@
 
 use chuchi::body::BodyHttp;
 use chuchi::Body;
-use hyper_util::rt::TokioExecutor;
 
 use std::io;
 
@@ -31,6 +30,8 @@ macro_rules! other_err {
 pub async fn send_request(
 	req: hyper::Request<BodyHttp>,
 ) -> io::Result<hyper::Response<hyper::body::Incoming>> {
+	use hyper_util::rt::TokioExecutor;
+
 	let client =
 		hyper_util::client::legacy::Client::builder(TokioExecutor::new())
 			.build_http();
@@ -42,7 +43,7 @@ pub async fn send_request(
 
 #[cfg(not(feature = "http1"))]
 pub async fn send_request(
-	req: hyper::Request<BodyHttp>,
+	_req: hyper::Request<BodyHttp>,
 ) -> io::Result<hyper::Response<hyper::body::Incoming>> {
 	panic!("http1 feature is required for this test")
 }
