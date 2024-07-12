@@ -11,6 +11,7 @@ use std::task::{Context, Poll};
 
 use crate::body::BodyHttp;
 use hyper_util::rt::{TokioExecutor, TokioIo};
+#[cfg(any(feature = "http1", feature = "http2"))]
 use hyper_util::server::conn::auto::Builder;
 
 use hyper::body::{Body, Frame, Incoming, SizeHint};
@@ -43,6 +44,7 @@ impl Server {
 		self.listener.local_addr().map_err(Error::from_server_error)
 	}
 
+	#[cfg(any(feature = "http1", feature = "http2"))]
 	pub async fn serve(self) -> Result<()> {
 		loop {
 			let (stream, address) = self

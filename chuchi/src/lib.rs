@@ -238,7 +238,15 @@ impl ChuchiServer {
 	pub async fn run(self) -> Result<()> {
 		info!("Running server on addr: {}", self.local_addr().unwrap());
 
-		self.server.serve().await
+		#[cfg(any(feature = "http1", feature = "http2"))]
+		{
+			self.server.serve().await
+		}
+
+		#[cfg(not(any(feature = "http1", feature = "http2")))]
+		{
+			panic!("http1 or http2 feature must be enabled")
+		}
 	}
 }
 

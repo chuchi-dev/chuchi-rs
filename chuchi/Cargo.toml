@@ -72,24 +72,28 @@ required-features = ["json"]
 test = true
 
 [[test]]
+name = "default_features"
+required-features = ["http1"]
+
+[[test]]
 name = "json"
-required-features = ["json"]
+required-features = ["http1", "json"]
 
 [[test]]
 name = "fs"
-required-features = ["fs"]
+required-features = ["http1", "fs"]
 
 [[test]]
 name = "ws"
-required-features = ["ws"]
+required-features = ["http1", "ws"]
 
 [[test]]
 name = "api_basic"
-required-features = ["api", "testing"]
+required-features = ["http1", "api", "testing"]
 
 [[test]]
 name = "api_stream"
-required-features = ["api", "testing", "api-stream"]
+required-features = ["http1", "api", "testing", "api-stream"]
 
 [dependencies]
 chuchi-core = { version = "0.1.0", path = "../chuchi-core" }

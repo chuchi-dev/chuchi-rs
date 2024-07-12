@@ -27,17 +27,24 @@ macro_rules! other_err {
 	};
 }
 
+#[cfg(feature = "http1")]
 pub async fn send_request(
 	req: hyper::Request<BodyHttp>,
 ) -> io::Result<hyper::Response<hyper::body::Incoming>> {
 	let client =
 		hyper_util::client::legacy::Client::builder(TokioExecutor::new())
 			.build_http();
-
 	client
 		.request(req.map(Box::pin))
 		.await
 		.map_err(|e| other_err!(e))
+}
+
+#[cfg(not(feature = "http1"))]
+pub async fn send_request(
+	req: hyper::Request<BodyHttp>,
+) -> io::Result<hyper::Response<hyper::body::Incoming>> {
+	panic!("http1 feature is required for this test")
 }
 
 macro_rules! make_request {
