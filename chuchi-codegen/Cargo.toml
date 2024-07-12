@@ -15,9 +15,9 @@ proc-macro = true
 [features]
 json = []
 ws = []
-# api = []
+api = []
 # requires the api feature to be set
-stream = []
+stream = ["api"]
 
 [dependencies]
 proc-macro2 = "1.0"

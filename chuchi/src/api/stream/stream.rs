@@ -1,7 +1,7 @@
 //! The names are in the perspective of the client
 
 use super::message::MessageKind;
-use crate::error::ApiError;
+use crate::api::error::ApiError;
 
 use serde::{de::DeserializeOwned, Serialize};
 

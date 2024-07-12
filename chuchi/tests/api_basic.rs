@@ -1,10 +1,10 @@
-use fire::extractor::PathParam;
-use fire::RequestExtractor;
-use fire_http_api as fire_api;
+use chuchi::extractor::PathParam;
+use chuchi::RequestExtractor;
 
-use fire_api::error::{self, Error as ApiError, StatusCode};
-use fire_api::testing::FirePitApi;
-use fire_api::{api, Method, Request};
+use chuchi::api;
+use chuchi::api::error::{self, Error as ApiError, StatusCode};
+use chuchi::api::testing::ChuchiSharedApi;
+use chuchi::api::{Method, Request};
 
 use std::fmt;
 
@@ -99,14 +99,14 @@ async fn user(req: UserReq, id: &PathParam<str>) -> Result<UserResp, Error> {
 	})
 }
 
-async fn init() -> FirePitApi {
-	let mut server = fire::build("127.0.0.1:0").await.unwrap();
+async fn init() -> ChuchiSharedApi {
+	let mut server = chuchi::build("127.0.0.1:0").await.unwrap();
 
 	server.add_route(test);
 	server.add_route(user);
 
 	let fire = server.build().await.unwrap();
-	FirePitApi::new(fire.pit())
+	ChuchiSharedApi::new(fire.shared())
 }
 
 #[traced_test]
@@ -180,7 +180,7 @@ async fn test_get_error() -> Result<NoResp, Error> {
 #[tokio::test]
 #[should_panic]
 async fn test_get() {
-	let mut server = fire::build("127.0.0.1:0").await.unwrap();
+	let mut server = chuchi::build("127.0.0.1:0").await.unwrap();
 
 	server.add_route(test_get_error);
 

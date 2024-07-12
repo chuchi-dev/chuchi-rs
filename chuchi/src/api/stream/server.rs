@@ -15,13 +15,13 @@ use tokio::time::{interval, Duration};
 
 use tracing::{error, trace};
 
-use fire::header::{Method, RequestHeader};
-use fire::routes::{
+use crate::header::{Method, RequestHeader};
+use crate::routes::{
 	HyperRequest, ParamsNames, PathParams, RawRoute, RoutePath,
 };
-pub use fire::util::PinnedFuture;
-use fire::ws::{self, JsonError, WebSocket};
-use fire::{resources::Resources, Response};
+pub use crate::util::PinnedFuture;
+use crate::ws::{self, JsonError, WebSocket};
+use crate::{resources::Resources, Response};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Request {
@@ -101,14 +101,14 @@ impl RawRoute for StreamServer {
 		address: SocketAddr,
 		params: &'a PathParams,
 		resources: &'a Resources,
-	) -> PinnedFuture<'a, Option<fire::Result<Response>>> {
+	) -> PinnedFuture<'a, Option<crate::Result<Response>>> {
 		PinnedFuture::new(async move {
 			let (on_upgrade, ws_accept) = match ws::util::upgrade(req) {
 				Ok(o) => o,
 				Err(e) => return Some(Err(e)),
 			};
 
-			let header = fire::ws::util::hyper_req_to_header(req, address);
+			let header = crate::ws::util::hyper_req_to_header(req, address);
 			let header = match header {
 				Ok(h) => h,
 				Err(e) => return Some(Err(e)),

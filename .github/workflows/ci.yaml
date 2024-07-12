@@ -43,7 +43,7 @@ jobs:
       - run: cargo test --no-default-features
 
   test_msrv_features:
-    name: Test All features
+    name: Test some features
     runs-on: ubuntu-latest
     strategy:
       matrix:

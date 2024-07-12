@@ -1,11 +1,10 @@
-use fire::body::BodyHttp;
-use fire::ws::{CloseCode, WebSocket};
-use fire::{api_stream, Body};
-use fire_api::stream::message::{Message, MessageData, MessageKind};
-use fire_api::stream::{Stream, StreamKind, StreamServer, Streamer};
-use fire_http_api as fire_api;
+use chuchi::api::stream::message::{Message, MessageData, MessageKind};
+use chuchi::api::stream::{Stream, StreamKind, StreamServer, Streamer};
+use chuchi::body::BodyHttp;
+use chuchi::ws::{CloseCode, WebSocket};
+use chuchi::{api_stream, Body};
 
-use fire_api::error::{self, Error as ApiError, StatusCode};
+use chuchi::api::error::{self, Error as ApiError, StatusCode};
 use hyper_util::rt::{TokioExecutor, TokioIo};
 
 use tokio::time::sleep;
@@ -92,11 +91,11 @@ macro_rules! spawn_server {
 		use std::net::{Ipv4Addr, SocketAddr};
 
 		let socket_addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), 0);
-		let mut $builder = fire::build(socket_addr).await.unwrap();
+		let mut $builder = chuchi::build(socket_addr).await.unwrap();
 		let _ = $block;
 		let fire = $builder.build().await.unwrap();
 		let addr = fire.local_addr().unwrap();
-		tokio::task::spawn(fire.ignite());
+		tokio::task::spawn(fire.run());
 
 		addr
 	}};

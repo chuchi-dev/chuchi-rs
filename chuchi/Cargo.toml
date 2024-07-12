@@ -31,6 +31,9 @@ ws = [
 ## GraphQl is unstable
 graphql = ["json", "dep:juniper"]
 sentry = ["dep:sentry-core"]
+testing = []
+api = ["json", "chuchi-core/query", "chuchi-codegen/api"]
+api-stream = ["api", "ws", "chuchi-codegen/stream"]
 
 [[example]]
 name = "catcher"
@@ -80,6 +83,14 @@ required-features = ["fs"]
 name = "ws"
 required-features = ["ws"]
 
+[[test]]
+name = "api_basic"
+required-features = ["api", "testing"]
+
+[[test]]
+name = "api_stream"
+required-features = ["api", "testing", "api-stream"]
+
 [dependencies]
 chuchi-core = { version = "0.1.0", path = "../chuchi-core" }
 hyper = { version = "1.2", features = ["server"] }
@@ -103,11 +114,13 @@ thiserror = "1.0.58"
 sentry-core = { version = "0.34", features = ["client"], optional = true }
 
 [dev-dependencies]
+serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 hyper = { version = "1.2", features = ["server", "client"] }
 hyper-util = { version = "0.1", features = ["client", "client-legacy"] }
 tracing-subscriber = "0.3"
 tracing-test = { version = "0.2.4", features = ["no-env-filter"] }
+tokio-tungstenite = { version = "0.23", default-features = false }
 
 [package.metadata.docs.rs]
 all-features = true

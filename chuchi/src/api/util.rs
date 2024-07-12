@@ -1,20 +1,19 @@
-use crate::error::Error;
-use crate::response::ResponseSettings;
-use crate::ApiError;
-use crate::Request;
+use super::error::Error;
+use super::response::ResponseSettings;
+use super::ApiError;
+use super::Request;
 
 use std::time::Duration;
 
-use fire::extractor::ExtractorError;
-use representation::request::SerializeError;
-
-use fire::error::ServerErrorKind;
-use fire::header::{HeaderValues, Method, Mime};
-use fire::{Body, Response};
+use crate::error::ServerErrorKind;
+use crate::extractor::ExtractorError;
+use crate::header::{HeaderValues, Method, Mime};
+use crate::request::SerializeError;
+use crate::{Body, Response};
 use tracing::info;
 
 pub fn setup_request<R: Request>(
-	req: &mut fire::Request,
+	req: &mut crate::Request,
 ) -> Result<(), R::Error> {
 	req.set_size_limit(Some(R::SIZE_LIMIT));
 	req.set_timeout(Some(Duration::from_secs(R::TIMEOUT as u64)));
@@ -31,7 +30,7 @@ pub fn setup_request<R: Request>(
 }
 
 pub async fn deserialize_req<R: Request + Send + 'static>(
-	req: &mut fire::Request,
+	req: &mut crate::Request,
 ) -> Result<R, R::Error> {
 	// since a get request does not have a body let's parse the query parameters
 	if R::METHOD == Method::GET {
@@ -59,7 +58,7 @@ pub fn serialize_resp<R: Request>(
 /// todo find a better name
 pub fn transform_body_to_response<R: Request>(
 	res: Result<(ResponseSettings, Body), R::Error>,
-) -> fire::Result<Response> {
+) -> crate::Result<Response> {
 	let (status, headers, body) = match res {
 		Ok((settings, body)) => (settings.status, settings.headers, body),
 		Err(e) => {
@@ -67,7 +66,7 @@ pub fn transform_body_to_response<R: Request>(
 			// status code should define the error and this should referenced to it
 
 			let body = Body::serialize(&e).map_err(|e| {
-				fire::Error::new(ServerErrorKind::InternalServerError, e)
+				crate::Error::new(ServerErrorKind::InternalServerError, e)
 			})?;
 
 			(e.status_code(), HeaderValues::new(), body)

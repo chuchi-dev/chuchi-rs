@@ -1,7 +1,7 @@
-use fire::extractor::ExtractorError;
+use crate::extractor::ExtractorError;
 
-use crate::error::Error;
-use crate::ApiError;
+use crate::api::error::Error;
+use crate::api::ApiError;
 
 use super::error::UnrecoverableError;
 use super::message::MessageData;

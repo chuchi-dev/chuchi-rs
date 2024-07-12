@@ -1,21 +1,20 @@
 // todo if this should ever be used outside of testing the uri parameter
 // should be replaced with a hashmap or something simiar
-use crate::error::ApiError;
+use super::error::ApiError;
 
-use fire::header::{HeaderValues, Method, Mime, StatusCode};
-use fire::resources::Resources;
-use fire::routes::ParamsNames;
-use fire::{Body, Error, FirePit, Request, Response};
-
-use representation::request::DeserializeError;
+use crate::header::{HeaderValues, Method, Mime, StatusCode};
+use crate::request::DeserializeError;
+use crate::resources::Resources;
+use crate::routes::ParamsNames;
+use crate::{Body, ChuchiShared, Error, Request, Response};
 use serde::de::DeserializeOwned;
 
-pub struct FirePitApi {
-	inner: FirePit,
+pub struct ChuchiSharedApi {
+	inner: ChuchiShared,
 }
 
-impl FirePitApi {
-	pub fn new(inner: FirePit) -> Self {
+impl ChuchiSharedApi {
+	pub fn new(inner: ChuchiShared) -> Self {
 		Self { inner }
 	}
 
@@ -37,7 +36,7 @@ impl FirePitApi {
 
 	pub async fn request<R>(&self, req: &R) -> Result<R::Response, R::Error>
 	where
-		R: crate::Request,
+		R: super::Request,
 		R::Error: DeserializeOwned + Send + 'static,
 		R::Response: Send + 'static,
 	{
@@ -54,7 +53,7 @@ impl FirePitApi {
 		req: &R,
 	) -> Result<R::Response, R::Error>
 	where
-		R: crate::Request,
+		R: super::Request,
 		R::Error: DeserializeOwned + Send + 'static,
 		R::Response: Send + 'static,
 	{
@@ -69,7 +68,7 @@ impl FirePitApi {
 		header: HeaderValues,
 	) -> Result<R::Response, R::Error>
 	where
-		R: crate::Request,
+		R: super::Request,
 		R::Error: DeserializeOwned + Send + 'static,
 		R::Response: Send + 'static,
 	{
@@ -94,7 +93,7 @@ impl FirePitApi {
 		req: &mut Request,
 	) -> Result<R::Response, R::Error>
 	where
-		R: crate::Request,
+		R: super::Request,
 		R::Error: DeserializeOwned + Send + 'static,
 		R::Response: Send + 'static,
 	{
@@ -102,7 +101,7 @@ impl FirePitApi {
 			.route(req)
 			.await
 			.unwrap()
-			.map_err(crate::error::Error::Fire)
+			.map_err(super::error::Error::Chuchi)
 			.map_err(R::Error::from_error)?;
 
 		if resp.header().status_code() != &StatusCode::OK {
@@ -111,7 +110,7 @@ impl FirePitApi {
 				.deserialize()
 				.await
 				.map_err(DeserializeError::Json)
-				.map_err(crate::error::Error::Deserialize)
+				.map_err(super::error::Error::Deserialize)
 				.map_err(R::Error::from_error)?;
 
 			return Err(e);
@@ -121,7 +120,7 @@ impl FirePitApi {
 			.deserialize()
 			.await
 			.map_err(DeserializeError::Json)
-			.map_err(crate::error::Error::Deserialize)
+			.map_err(super::error::Error::Deserialize)
 			.map_err(R::Error::from_error)
 	}
 }

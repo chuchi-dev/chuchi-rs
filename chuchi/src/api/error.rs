@@ -1,8 +1,8 @@
 use std::fmt::{Debug, Display};
 
-pub use fire::header::StatusCode;
+pub use crate::header::StatusCode;
 
-use representation::request::{DeserializeError, SerializeError};
+use crate::request::{DeserializeError, SerializeError};
 use serde::Serialize;
 
 /*
@@ -50,5 +50,5 @@ pub enum Error {
 
 	/// Some internal Error
 	#[error("Internal error: {0}")]
-	Fire(fire::Error),
+	Chuchi(crate::Error),
 }

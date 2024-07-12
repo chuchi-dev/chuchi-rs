@@ -1,6 +1,6 @@
-use crate::error::ApiError;
+use super::error::ApiError;
 
-pub use fire::header::Method;
+pub use crate::header::Method;
 
 use serde::{de::DeserializeOwned, Serialize};
 

@@ -47,6 +47,14 @@ pub mod ws;
 #[cfg_attr(docsrs, doc(cfg(feature = "graphql")))]
 pub mod graphql;
 
+#[cfg(feature = "api")]
+#[cfg_attr(docsrs, doc(cfg(feature = "api")))]
+pub mod api;
+
+#[cfg(feature = "json")]
+#[doc(hidden)]
+pub use serde_json;
+
 pub mod service {
 	pub use crate::server::ChuchiService;
 }

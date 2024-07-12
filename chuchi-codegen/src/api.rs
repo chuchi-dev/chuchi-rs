@@ -10,7 +10,7 @@ Resources,
 
 use crate::request_extractor::impl_extractor;
 use crate::route::generate_struct;
-use crate::util::{fire_api_crate, validate_inputs, validate_signature};
+use crate::util::{chuchi_crate, validate_inputs, validate_signature};
 use crate::ApiArgs;
 
 use proc_macro2::{Literal, TokenStream};
@@ -18,8 +18,8 @@ use quote::{format_ident, quote};
 use syn::{ItemFn, Result};
 
 pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
-	let fire_api = fire_api_crate()?;
-	let fire = quote!(#fire_api::fire);
+	let chuchi = chuchi_crate()?;
+	let chuchi_api = quote!(#chuchi::api);
 	let req_ty = args.ty;
 
 	validate_signature(&item.sig)?;
@@ -29,7 +29,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 	let impl_extractor = if !args.impl_extractor {
 		quote!()
 	} else {
-		impl_extractor(&fire, &quote!(#req_ty))
+		impl_extractor(&chuchi, &quote!(#req_ty))
 	};
 
 	// Box<Type>
@@ -39,15 +39,15 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 	let struct_gen = generate_struct(&item);
 
 	//
-	let ty_as_req = quote!(<#req_ty as #fire_api::Request>);
-	let extractor_type = quote!(#fire::extractor::Extractor<#req_ty>);
+	let ty_as_req = quote!(<#req_ty as #chuchi_api::Request>);
+	let extractor_type = quote!(#chuchi::extractor::Extractor<#req_ty>);
 
 	let valid_data_fn = {
 		let mut asserts = vec![];
 
 		for (name, ty) in &inputs {
 			asserts.push(quote!({
-				let validate = #fire::extractor::Validate::new(
+				let validate = #chuchi::extractor::Validate::new(
 					#name, params, &mut state, resources
 				);
 
@@ -60,26 +60,26 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 		quote!(
 			fn validate_requirements(
 				&self,
-				params: &#fire::routes::ParamsNames,
-				resources: &#fire::resources::Resources
+				params: &#chuchi::routes::ParamsNames,
+				resources: &#chuchi::resources::Resources
 			) {
 				#[allow(unused_mut, dead_code)]
-				let mut state = #fire::state::StateValidation::new();
-				state.insert::<#fire::state::StateRefCell<
-					#fire_api::response::ResponseSettings
+				let mut state = #chuchi::state::StateValidation::new();
+				state.insert::<#chuchi::state::StateRefCell<
+					#chuchi_api::response::ResponseSettings
 				>>();
 
 				#(#asserts)*
 
-				#fire_api::util::validate_request::<#req_ty>(stringify!(#req_ty));
+				#chuchi_api::util::validate_request::<#req_ty>(stringify!(#req_ty));
 			}
 		)
 	};
 
 	// path fn
 	let path_fn = quote!(
-		fn path(&self) -> #fire::routes::RoutePath {
-			#fire::routes::RoutePath {
+		fn path(&self) -> #chuchi::routes::RoutePath {
+			#chuchi::routes::RoutePath {
 				method: Some(#ty_as_req::METHOD),
 				path: #ty_as_req::PATH.into()
 			}
@@ -108,7 +108,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 
 		for (idx, (name, ty)) in inputs.iter().enumerate() {
 			prepare_extractors.push(quote!({
-				let prepare = #fire::extractor::Prepare::new(
+				let prepare = #chuchi::extractor::Prepare::new(
 					#name, header, params, &mut state, resources
 				);
 
@@ -119,7 +119,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 				match res {
 					Ok(res) => res,
 					Err(e) => {
-						return Err(#fire_api::util::extraction_error::<#req_ty>(e));
+						return Err(#chuchi_api::util::extraction_error::<#req_ty>(e));
 					}
 				}
 			}));
@@ -129,7 +129,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 
 			handler_args_vars.push(quote!(
 				let #var_name = {
-					let extract = #fire::extractor::Extract::new(
+					let extract = #chuchi::extractor::Extract::new(
 						prepared.#i, #name, &mut req, &params, &state, &resources
 					);
 
@@ -140,7 +140,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 					match res {
 						Ok(res) => res,
 						Err(e) => {
-							return Err(#fire_api::util::extraction_error::<#req_ty>(e));
+							return Err(#chuchi_api::util::extraction_error::<#req_ty>(e));
 						}
 					}
 				};
@@ -151,32 +151,32 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 		quote!(
 			fn call<'a>(
 				&'a self,
-				req: &'a mut #fire::Request,
-				params: &'a #fire::routes::PathParams,
-				resources: &'a #fire::resources::Resources
-			) -> #fire::util::PinnedFuture<'a, #fire::Result<#fire::Response>> {
+				req: &'a mut #chuchi::Request,
+				params: &'a #chuchi::routes::PathParams,
+				resources: &'a #chuchi::resources::Resources
+			) -> #chuchi::util::PinnedFuture<'a, #chuchi::Result<#chuchi::Response>> {
 				#handler_fn
 
 				type __Response = #ty_as_req::Response;
 				type __Error = #ty_as_req::Error;
 
 				async fn route_to_body(
-					fire_req: &mut #fire::Request,
-					params: &#fire::routes::PathParams,
-					resources: &#fire::resources::Resources
+					fire_req: &mut #chuchi::Request,
+					params: &#chuchi::routes::PathParams,
+					resources: &#chuchi::resources::Resources
 				) -> std::result::Result<(
-					#fire_api::response::ResponseSettings,
-					#fire::Body
+					#chuchi_api::response::ResponseSettings,
+					#chuchi::Body
 				), __Error> {
-					#fire_api::util::setup_request::<#req_ty>(fire_req)?;
+					#chuchi_api::util::setup_request::<#req_ty>(fire_req)?;
 
-					let req = #fire_api::util::deserialize_req::<#req_ty>(
+					let req = #chuchi_api::util::deserialize_req::<#req_ty>(
 						fire_req
 					).await?;
 
 					#[allow(unused_mut, dead_code)]
-					let mut state = #fire::state::State::new();
-					state.insert(#fire_api::response::ResponseSettings::new_for_state());
+					let mut state = #chuchi::state::State::new();
+					state.insert(#chuchi_api::response::ResponseSettings::new_for_state());
 
 					let header = fire_req.header();
 
@@ -194,15 +194,15 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 					)#await_kw?;
 
 					let resp_header = state.remove::<
-						#fire::state::StateRefCell<#fire_api::response::ResponseSettings>
+						#chuchi::state::StateRefCell<#chuchi_api::response::ResponseSettings>
 					>().unwrap();
 
-					#fire_api::util::serialize_resp::<#req_ty>(&resp)
+					#chuchi_api::util::serialize_resp::<#req_ty>(&resp)
 						.map(|body| (resp_header.into_inner(), body))
 				}
 
-				#fire::util::PinnedFuture::new(async move {
-					#fire_api::util::transform_body_to_response::<#req_ty>(
+				#chuchi::util::PinnedFuture::new(async move {
+					#chuchi_api::util::transform_body_to_response::<#req_ty>(
 						route_to_body(req, params, resources).await
 					)
 				})
@@ -215,7 +215,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 
 		#struct_gen
 
-		impl #fire::routes::Route for #struct_name {
+		impl #chuchi::routes::Route for #struct_name {
 			#valid_data_fn
 
 			#path_fn

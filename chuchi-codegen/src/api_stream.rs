@@ -9,7 +9,7 @@ Resources,
 
 use crate::request_extractor::impl_extractor;
 use crate::route::generate_struct;
-use crate::util::{fire_api_crate, validate_inputs, validate_signature};
+use crate::util::{chuchi_crate, validate_inputs, validate_signature};
 use crate::ApiArgs;
 
 use proc_macro2::{Literal, TokenStream};
@@ -17,9 +17,9 @@ use quote::{format_ident, quote};
 use syn::{ItemFn, Result};
 
 pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
-	let fire_api = fire_api_crate()?;
-	let fire = quote!(#fire_api::fire);
-	let stream_mod = quote!(#fire_api::stream);
+	let chuchi = chuchi_crate()?;
+	let chuchi_api = quote!(#chuchi::api);
+	let stream_mod = quote!(#chuchi_api::stream);
 	let stream_ty = args.ty;
 
 	validate_signature(&item.sig)?;
@@ -28,7 +28,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 	let impl_extractor = if !args.impl_extractor {
 		quote!()
 	} else {
-		impl_extractor(&fire, &quote!(#stream_ty))
+		impl_extractor(&chuchi, &quote!(#stream_ty))
 	};
 
 	// Box<Type>
@@ -39,7 +39,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 
 	//
 	let ty_as_stream = quote!(<#stream_ty as #stream_mod::Stream>);
-	let extractor_type = quote!(#fire::extractor::Extractor<#stream_ty>);
+	let extractor_type = quote!(#chuchi::extractor::Extractor<#stream_ty>);
 
 	let into_stream_impl = quote!(
 		impl #stream_mod::server::IntoStreamHandler for #struct_name {
@@ -55,7 +55,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 
 		for (name, ty) in &inputs {
 			asserts.push(quote!({
-				let validate = #fire::extractor::Validate::new(
+				let validate = #chuchi::extractor::Validate::new(
 					#name, params, &mut state, resources
 				);
 
@@ -68,11 +68,11 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 		quote!(
 			fn validate_requirements(
 				&self,
-				params: &#fire::routes::ParamsNames,
-				resources: &#fire::resources::Resources
+				params: &#chuchi::routes::ParamsNames,
+				resources: &#chuchi::resources::Resources
 			) {
 				#[allow(unused_mut, dead_code)]
-				let mut state = #fire::state::StateValidation::new();
+				let mut state = #chuchi::state::StateValidation::new();
 				state.insert::<#stream_ty>();
 
 				#(#asserts)*
@@ -102,7 +102,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 
 		for (idx, (name, ty)) in inputs.iter().enumerate() {
 			prepare_extractors.push(quote!({
-				let prepare = #fire::extractor::Prepare::new(
+				let prepare = #chuchi::extractor::Prepare::new(
 					#name, header, params, &mut state, resources
 				);
 
@@ -123,7 +123,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 
 			handler_args_vars.push(quote!(
 				let #var_name = {
-					let extract = #fire::extractor::Extract::new(
+					let extract = #chuchi::extractor::Extract::new(
 						prepared.#i, #name, &mut req, &params, &state, &resources
 					);
 
@@ -146,10 +146,10 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 			fn handle<'a>(
 				&'a self,
 				req: #stream_mod::message::MessageData,
-				header: &'a #fire::header::RequestHeader,
-				params: &'a #fire::routes::PathParams,
+				header: &'a #chuchi::header::RequestHeader,
+				params: &'a #chuchi::routes::PathParams,
 				streamer: #stream_mod::streamer::RawStreamer,
-				resources: &'a #fire::resources::Resources
+				resources: &'a #chuchi::resources::Resources
 			) -> #stream_mod::server::PinnedFuture<'a, std::result::Result<
 				#stream_mod::message::MessageData,
 				#stream_mod::error::UnrecoverableError
@@ -161,16 +161,16 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 				async fn _handle(
 					streamer: #stream_mod::streamer::RawStreamer,
 					req: #stream_ty,
-					header: &#fire::header::RequestHeader,
-					params: &#fire::routes::PathParams,
-					resources: &#fire::resources::Resources
+					header: &#chuchi::header::RequestHeader,
+					params: &#chuchi::routes::PathParams,
+					resources: &#chuchi::resources::Resources
 				) -> std::result::Result<(), __Error> {
 					// transform streamer
 					let streamer = #stream_mod::util::transform_streamer
 						::<#stream_ty>(streamer);
 
 					#[allow(unused_mut, dead_code)]
-					let mut state = #fire::state::State::new();
+					let mut state = #chuchi::state::State::new();
 					state.insert(streamer);
 
 					// prepare extractions

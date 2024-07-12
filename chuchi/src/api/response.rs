@@ -1,4 +1,4 @@
-use fire::{
+use crate::{
 	extractor::Extractor,
 	extractor_extract, extractor_prepare, extractor_validate,
 	header::{values::IntoHeaderName, HeaderValue, HeaderValues, StatusCode},

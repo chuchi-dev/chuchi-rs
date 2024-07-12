@@ -1,7 +1,7 @@
 use super::error::StreamError;
 use super::message::MessageData;
 
-use fire::{
+use crate::{
 	extractor::Extractor, extractor_extract, extractor_prepare,
 	extractor_validate,
 };

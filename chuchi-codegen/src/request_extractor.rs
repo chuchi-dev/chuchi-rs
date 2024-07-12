@@ -3,19 +3,18 @@ use syn::{DeriveInput, Error};
 
 use ::quote::quote;
 
-use crate::util::fire_api_crate;
+use crate::util::chuchi_crate;
 
 type Result<T> = std::result::Result<T, Error>;
 
 pub fn expand(input: &DeriveInput) -> Result<proc_macro::TokenStream> {
-	let fire_api = fire_api_crate()?;
-	let fire = quote!(#fire_api::fire);
+	let chuchi = chuchi_crate()?;
 
 	let ty = &input.ident;
 
 	let (_, ty_generics, _) = input.generics.split_for_impl();
 
-	Ok(impl_extractor(&fire, &quote!(#ty #ty_generics)).into())
+	Ok(impl_extractor(&chuchi, &quote!(#ty #ty_generics)).into())
 }
 
 pub fn impl_extractor(fire: &TokenStream, ty: &TokenStream) -> TokenStream {
