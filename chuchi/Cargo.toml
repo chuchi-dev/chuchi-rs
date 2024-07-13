@@ -1,7 +1,7 @@
 [package]
 name = "chuchi"
 description = "Http async library based on hyper and tokio"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Sören Meier <info@soerenmeier.ch>"]
 repository = "https://github.com/chuchi-dev/chuchi-rs"
 edition = "2021"
@@ -33,7 +33,7 @@ graphql = ["json", "dep:juniper"]
 sentry = ["dep:sentry-core"]
 testing = []
 api = ["json", "chuchi-core/query", "chuchi-codegen/api"]
-api-stream = ["api", "ws", "chuchi-codegen/stream"]
+api-stream = ["api", "ws", "chuchi-codegen/stream", "tokio/macros"]
 
 [[example]]
 name = "catcher"
