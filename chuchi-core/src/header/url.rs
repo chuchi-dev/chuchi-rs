@@ -1,8 +1,7 @@
 use super::Uri;
 
-use http::uri::{Authority, PathAndQuery, Scheme};
-
 pub use form_urlencoded::Parse as QueryIter;
+pub use http::uri::{Authority, PathAndQuery, Scheme};
 
 /// Contains a request url.
 ///
