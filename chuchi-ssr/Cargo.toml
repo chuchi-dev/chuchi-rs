@@ -7,7 +7,7 @@ repository = "hteps://github.com/chuchi-dev/chuchi-rs"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 categories = ["web-programming"]
-rust-version = "1.64"
+rust-version = "1.74"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }

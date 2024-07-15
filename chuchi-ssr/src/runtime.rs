@@ -81,9 +81,11 @@ impl ModuleLoader for StaticModuleLoader {
 				.map(|ext| ext == "json")
 				.unwrap_or(false);
 
-			let module_type = is_json
-				.then(|| ModuleType::Json)
-				.unwrap_or(ModuleType::JavaScript);
+			let module_type = if is_json {
+				ModuleType::Json
+			} else {
+				ModuleType::JavaScript
+			};
 
 			let code = fs::read_to_string(path).await?;
 
@@ -350,7 +352,7 @@ async fn op_fetch(
 	let method: Method =
 		req.method.to_uppercase().parse().unwrap_or(Method::GET);
 
-	if !req.url.starts_with("/") {
+	if !req.url.starts_with('/') {
 		let resp = reqwest::Client::new()
 			.request(method, reqwest::Url::parse(&req.url)?)
 			.headers(values.into_inner())
