@@ -9,7 +9,7 @@ use tokio::runtime;
 use tokio::sync::{mpsc, oneshot};
 use tokio::time::{self, Duration};
 
-use fire::FirePit;
+use chuchi::ChuchiShared;
 
 use serde_json::Value;
 
@@ -18,7 +18,7 @@ use tracing::{debug, info, trace};
 const GC_INTERVAL: Duration = Duration::from_secs(60);
 
 enum PoolMsg {
-	SetPit(FirePit),
+	SetShared(ChuchiShared),
 	Request((SsrRequest, oneshot::Sender<SsrResponse>)),
 }
 
@@ -38,9 +38,9 @@ impl PoolHandle {
 		Self { sender }
 	}
 
-	pub async fn send_pit(&self, pit: FirePit) {
+	pub async fn send_pit(&self, shared: ChuchiShared) {
 		self.sender
-			.send(PoolMsg::SetPit(pit))
+			.send(PoolMsg::SetShared(shared))
 			.await
 			.map_err(|_| "ssr handler panicked")
 			.unwrap();
@@ -87,7 +87,7 @@ async fn pool_handler(
 			// don't
 			msg = rx.recv() => {
 				let msg = match msg.unwrap() {
-					PoolMsg::SetPit(fire_pit) => {
+					PoolMsg::SetShared(fire_pit) => {
 						pit = Some(fire_pit);
 						continue
 					},
@@ -184,7 +184,7 @@ struct ThreadHandle {
 impl ThreadHandle {
 	pub fn spawn_new_runtime(
 		base_dir: PathBuf,
-		pit: Option<FirePit>,
+		shared: Option<ChuchiShared>,
 		req_recv: RequestReceiver,
 		opts: Value,
 	) -> Self {
@@ -198,7 +198,7 @@ impl ThreadHandle {
 				.unwrap()
 				.block_on(async move {
 					let mut js_rt =
-						Runtime::new(base_dir, pit, req_recv, opts).await;
+						Runtime::new(base_dir, shared, req_recv, opts).await;
 					let mut shutdown_received = false;
 
 					trace!("runtime created");

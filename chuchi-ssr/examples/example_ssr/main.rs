@@ -1,40 +1,34 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use fire_ssr::JsServer;
+use chuchi_ssr::JsServer;
 
-use fire::{get, get_json, Request, Response, Error};
-use fire::fs::StaticFiles;
-
+use chuchi::fs::StaticFiles;
+use chuchi::{get, get_json, Error, Request, Response};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct News {
 	title: String,
-	content: String
+	content: String,
 }
 
 #[get_json("/api/news")]
 fn test_api() -> Vec<News> {
-	vec![
-		News {
-			title: "Sommarugas abrupter Rücktritt ist verständlich, kommt aber \
-			zur Unzeit".into(),
-			content: "Die Schweiz befindet sich mitten in der grössten \
+	vec![News {
+		title: "Sommarugas abrupter Rücktritt ist verständlich, kommt aber \
+			zur Unzeit"
+			.into(),
+		content: "Die Schweiz befindet sich mitten in der grössten \
 			Energiekrise seit Jahrzehnten. Nun verliert das Land ausgerechnet \
 			jene Bundesrätin, die im Krisenmanagement die Fäden in den Händen \
-			hält.".into()
-		}
-	]
+			hält."
+			.into(),
+	}]
 }
 
 #[get("/*")]
-async fn all(
-	req: &mut Request,
-	ssr: &JsServer
-) -> Result<Response, Error> {
-	ssr.request(req).await
-		.map_err(Error::from_server_error)
+async fn all(req: &mut Request, ssr: &JsServer) -> Result<Response, Error> {
+	ssr.request(req).await.map_err(Error::from_server_error)
 }
-
 
 #[tokio::main]
 async fn main() {
@@ -42,21 +36,22 @@ async fn main() {
 		.with_env_filter("error,fire_http=trace")
 		.init();
 
-	let mut fire = fire::build("0.0.0.0:3000").await.unwrap();
+	let mut server = chuchi::build("0.0.0.0:3000").await.unwrap();
 
-	fire.add_route(test_api);
-	fire.add_route(StaticFiles::new("/assets", "./../example-ssr/dist/assets"));
+	server.add_route(test_api);
+	server
+		.add_route(StaticFiles::new("/assets", "./../example-ssr/dist/assets"));
 
 	let js_server = JsServer::new(
 		"./examples/example_ssr/public/js",
 		include_str!("./public/index.html"),
 		(),
 		// 2 cores
-		2
+		2,
 	);
 
-	fire.add_data(js_server);
-	fire.add_route(all);
+	server.add_resource(js_server);
+	server.add_route(all);
 
-	fire.ignite().await.unwrap();
+	server.run().await.unwrap();
 }

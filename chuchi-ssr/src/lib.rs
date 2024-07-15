@@ -10,8 +10,8 @@ use std::{fmt, io};
 
 use serde::{Deserialize, Serialize};
 
-use fire::header::{Mime, StatusCode};
-use fire::{FirePit, Request, Resource, Response};
+use chuchi::header::{Mime, StatusCode};
+use chuchi::{ChuchiShared, Request, Resource, Response};
 
 use aho_corasick::AhoCorasick;
 
@@ -93,8 +93,8 @@ impl JsServer {
 	/// the http stack
 	///
 	/// You need to pass a FirePit
-	pub async fn route_internally(&self, pit: FirePit) {
-		self.pool.send_pit(pit).await;
+	pub async fn route_internally(&self, shared: ChuchiShared) {
+		self.pool.send_pit(shared).await;
 	}
 
 	pub async fn request(&self, req: &mut Request) -> Result<Response, Error> {

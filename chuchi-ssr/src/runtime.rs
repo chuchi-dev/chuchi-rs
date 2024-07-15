@@ -22,9 +22,9 @@ use deno_core::{
 use tokio::fs;
 use tokio::sync::oneshot;
 
-use fire::header::values::HeaderName;
-use fire::header::{HeaderValues, Method, RequestHeader, StatusCode};
-use fire::{FirePit, Request};
+use chuchi::header::values::HeaderName;
+use chuchi::header::{HeaderValues, Method, RequestHeader, StatusCode};
+use chuchi::{ChuchiShared, Request};
 
 use serde_json::Value;
 
@@ -127,7 +127,7 @@ impl Runtime {
 	/// needs to be run in a current_thread tokio runtime
 	pub(crate) async fn new(
 		base_dir: PathBuf,
-		pit: Option<FirePit>,
+		shared: Option<ChuchiShared>,
 		rx: RequestReceiver,
 		opts: Value,
 	) -> Self {
@@ -151,7 +151,7 @@ impl Runtime {
 			let state = runtime.op_state();
 			let mut state = state.borrow_mut();
 			state.put(rx);
-			if let Some(pit) = pit {
+			if let Some(pit) = shared {
 				state.put(pit);
 			}
 			state.put(IdCounter::new());
@@ -387,7 +387,7 @@ async fn op_fetch(
 
 	let pit = {
 		let state = state.borrow();
-		state.try_borrow::<FirePit>().cloned()
+		state.try_borrow::<ChuchiShared>().cloned()
 	};
 
 	if pit.is_none() {
