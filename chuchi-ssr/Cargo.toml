@@ -1,0 +1,31 @@
+[package]
+name = "chuchi-ssr"
+description = "Run javascript ssr in rust"
+version = "0.1.0"
+authors = ["Sören Meier <info@soerenmeier.ch>"]
+repository = "hteps://github.com/chuchi-dev/chuchi-rs"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+categories = ["web-programming"]
+rust-version = "1.64"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["rt", "fs", "sync", "macros"] }
+deno_core = "=0.275"
+deno_webidl = "0.147"
+deno_url = "0.147"
+deno_web = "0.178"
+deno_crypto = "0.161"
+deno_console = "0.147"
+chuchi = "0.1.0"
+aho-corasick = "1.0"
+tracing = "0.1"
+flume = "0.11"
+reqwest = "0.12"
+serde_json = "1.0"
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["rt-multi-thread"] }
+chuchi = { version = "0.1.0", features = ["json", "fs"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
