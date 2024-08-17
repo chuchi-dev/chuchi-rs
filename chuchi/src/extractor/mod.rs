@@ -239,6 +239,13 @@ pub type PathStr = PathParam<str>;
 #[repr(transparent)]
 pub struct PathParam<T: ?Sized>(T);
 
+impl<T: ?Sized> PathParam<T> {
+	pub fn from_ref<'a>(s: &'a T) -> &'a Self {
+		// safe because `PathParam` is `repr(transparent)`
+		unsafe { &*(s as *const T as *const Self) }
+	}
+}
+
 impl<'a, T, R> Extractor<'a, R> for PathParam<T>
 where
 	T: Send + Sync + FromStr + 'a,
@@ -281,13 +288,9 @@ impl<'a, R> Extractor<'a, R> for &'a PathParam<str> {
 	extractor_prepare!();
 
 	extractor_extract!(|extract| {
-		let s = extract.params.get(extract.name).unwrap();
+		let s = extract.params.get(extract.name).unwrap_or("");
 
-		// safe because `PathParam` is `repr(transparent)`
-		let s: &'a PathParam<str> =
-			unsafe { &*(s as *const str as *const PathParam<str>) };
-
-		Ok(s)
+		Ok(PathParam::from_ref(s))
 	});
 }
 

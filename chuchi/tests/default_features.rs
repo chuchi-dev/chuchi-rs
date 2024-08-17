@@ -64,22 +64,63 @@ async fn test_post() {
 async fn test_params() {
 	const BODY: &str = "Hello, name!";
 
-	#[get("/{name}")]
+	#[get("/hello/{name}")]
 	async fn hello(name: &PathStr) -> String {
 		format!("Hello, {}!", name)
 	}
 
+	#[get("/wild/{*rest}")]
+	async fn wild(rest: &PathStr) -> String {
+		format!("Wild: {}", rest)
+	}
+
+	#[get("/opt/{*?rest}")]
+	async fn opt(rest: &PathStr) -> String {
+		format!("Opt: {}", rest)
+	}
+
 	let addr = spawn_server!(|builder| {
 		builder.add_route(hello);
+		builder.add_route(wild);
+		builder.add_route(opt);
 	});
 
 	// now do a request
-	make_request!("GET", addr, "/name")
+	make_request!("GET", addr, "/hello/name")
 		.await
 		.assert_status(200)
 		.assert_header("content-type", "text/plain; charset=utf-8")
 		.assert_header("content-length", BODY.len().to_string())
 		.assert_body_str(BODY)
+		.await;
+
+	make_request!("GET", addr, "/wild").await.assert_status(404);
+	make_request!("GET", addr, "/wild/")
+		.await
+		.assert_status(404);
+
+	make_request!("GET", addr, "/wild/123")
+		.await
+		.assert_status(200)
+		.assert_body_str("Wild: 123")
+		.await;
+
+	make_request!("GET", addr, "/opt")
+		.await
+		.assert_status(200)
+		.assert_body_str("Opt: ")
+		.await;
+
+	make_request!("GET", addr, "/opt/")
+		.await
+		.assert_status(200)
+		.assert_body_str("Opt: ")
+		.await;
+
+	make_request!("GET", addr, "/opt/123")
+		.await
+		.assert_status(200)
+		.assert_body_str("Opt: 123")
 		.await;
 }
 
@@ -129,7 +170,7 @@ async fn test_catcher() {
 }
 
 #[tokio::test]
-async fn anything() {
+async fn test_resource() {
 	struct Data(Vec<u8>);
 
 	// some random data

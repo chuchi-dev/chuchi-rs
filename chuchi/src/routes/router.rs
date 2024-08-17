@@ -1,3 +1,5 @@
+use matchit::Match;
+
 use crate::header::Method;
 
 fn method_to_num(method: Option<&Method>) -> usize {
@@ -15,8 +17,14 @@ fn method_to_num(method: Option<&Method>) -> usize {
 	}
 }
 
+enum Route<T> {
+	Value(T),
+	// This needs to point to a route with a value
+	OtherRoute(String),
+}
+
 pub struct Router<T> {
-	inner: Box<[matchit::Router<T>]>,
+	inner: Box<[matchit::Router<Route<T>>]>,
 }
 
 impl<T> Router<T> {
@@ -33,7 +41,24 @@ impl<T> Router<T> {
 		value: T,
 	) -> Result<(), matchit::InsertError> {
 		let num = method_to_num(method);
-		self.inner[num].insert(path, value)
+		// todo we wan't syntax {*?rest} to be supported
+		let path = path.into();
+
+		if let Some((root_path, new_path)) = optional_rest_path(&path) {
+			// make sure we handle all possible requests
+			// /wild/rest /wild/ /wild
+
+			self.inner[num].insert(&root_path, Route::Value(value))?;
+			if root_path.ends_with('/') && root_path.len() > 1 {
+				self.inner[num].insert(
+					&root_path[..root_path.len() - 1],
+					Route::OtherRoute(root_path.clone()),
+				)?;
+			}
+			self.inner[num].insert(new_path, Route::OtherRoute(root_path))
+		} else {
+			self.inner[num].insert(path, Route::Value(value))
+		}
 	}
 
 	pub fn at<'a, 'b>(
@@ -43,17 +68,35 @@ impl<T> Router<T> {
 	) -> Option<(&'a T, matchit::Params<'a, 'b>)> {
 		let num = method_to_num(method);
 
-		self.inner[num]
+		let (route, params) = self.inner[num]
 			.at(path)
 			.map(|mat| (mat.value, mat.params))
-			.ok()
+			.ok()?;
+
+		match route {
+			Route::Value(v) => Some((v, params)),
+			Route::OtherRoute(path) => match self.inner[num].at(path) {
+				Ok(Match {
+					value: Route::Value(v),
+					..
+				}) => Some((v, params)),
+				Ok(_) => unreachable!(),
+				Err(_) => None,
+			},
+		}
+	}
+}
+
+fn optional_rest_path(path: &str) -> Option<(String, String)> {
+	if !path.ends_with('}') {
+		return None;
 	}
 
-	/* pub fn get(&self, method: &Method) -> &T {
-		&self.inner[*method as usize]
-	}
+	// check if {*? exists
+	let pat_start = path.rfind("{*?")?;
 
-	pub fn get_mut(&mut self, method: &Method) -> &mut T {
-		&mut self.inner[*method as usize]
-	} */
+	Some((
+		path[..pat_start].to_string(),
+		format!("{}{{*{}", &path[..pat_start], &path[pat_start + 3..]),
+	))
 }

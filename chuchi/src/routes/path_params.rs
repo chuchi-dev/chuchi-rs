@@ -26,13 +26,23 @@ impl PathParams {
 		self.inner.contains_key(key.as_ref())
 	}
 
+	/// ## Note
+	/// Due to the fact that {*?rest} exists, a key which does not exist
+	/// will be treated as an empty string
 	pub fn parse<T>(&self, key: impl AsRef<str>) -> Result<T, T::Err>
 	where
 		T: FromStr,
 	{
-		self.inner.get(key.as_ref()).unwrap().parse()
+		self.inner
+			.get(key.as_ref())
+			.map(AsRef::as_ref)
+			.unwrap_or("")
+			.parse()
 	}
 
+	/// ## Note
+	/// Due to the fact that {*?rest} exists the rest might not always
+	/// be set, so none might be returned even if ParamsNames says it exists
 	pub fn get(&self, key: impl AsRef<str>) -> Option<&str> {
 		self.inner.get(key.as_ref()).map(|s| s.as_str())
 	}
@@ -85,8 +95,13 @@ impl<'a> ParamsNames<'a> {
 							"escapping does not work in template string"
 						);
 
-						let s = parser.to_str();
-						let s = s.trim_start_matches('*');
+						let s = parser
+							.to_str()
+							// trim `{*?name}` name trimming this at once makes sure * is not
+							// where it doesn't work
+							.trim_start_matches("*?")
+							// trim `{*name}`
+							.trim_start_matches('*');
 						list.insert(s);
 
 						parser.next().unwrap();
