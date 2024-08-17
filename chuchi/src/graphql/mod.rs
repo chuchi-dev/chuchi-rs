@@ -33,7 +33,8 @@ impl Route for GraphiQl {
 	fn path(&self) -> RoutePath {
 		RoutePath {
 			method: Some(Method::GET),
-			path: format!("{}/{{*rem}}", self.uri.trim_end_matches('/')).into(),
+			path: format!("{}/{{*?rem}}", self.uri.trim_end_matches('/'))
+				.into(),
 		}
 	}
 

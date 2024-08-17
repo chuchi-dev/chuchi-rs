@@ -240,6 +240,7 @@ pub type PathStr = PathParam<str>;
 pub struct PathParam<T: ?Sized>(T);
 
 impl<T: ?Sized> PathParam<T> {
+	#[allow(clippy::needless_lifetimes)]
 	pub fn from_ref<'a>(s: &'a T) -> &'a Self {
 		// safe because `PathParam` is `repr(transparent)`
 		unsafe { &*(s as *const T as *const Self) }
