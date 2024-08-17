@@ -1,7 +1,7 @@
 [package]
 name = "chuchi"
 description = "Http async library based on hyper and tokio"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Sören Meier <info@soerenmeier.ch>"]
 repository = "https://github.com/chuchi-dev/chuchi-rs"
 edition = "2021"
@@ -13,20 +13,20 @@ rust-version = "1.74"
 default = ["http1"]
 
 json = [
-    "dep:serde",
-    "dep:serde_json",
-    "chuchi-core/json",
-    "chuchi-codegen/json",
+	"dep:serde",
+	"dep:serde_json",
+	"chuchi-core/json",
+	"chuchi-codegen/json",
 ]
 fs = ["tokio/fs", "dep:percent-encoding", "dep:rand"]
 http1 = ["hyper-util/http1"]
 http2 = ["hyper-util/http2"]
 ws = [
-    "dep:tokio-tungstenite",
-    "dep:futures-util",
-    "dep:base64",
-    "dep:sha-1",
-    "chuchi-codegen/ws",
+	"dep:tokio-tungstenite",
+	"dep:futures-util",
+	"dep:base64",
+	"dep:sha-1",
+	"chuchi-codegen/ws",
 ]
 ## GraphQl is unstable
 graphql = ["json", "dep:juniper"]
