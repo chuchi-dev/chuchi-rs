@@ -32,16 +32,19 @@ pub(crate) fn expand(
 	let valid_data_fn = {
 		let mut asserts = vec![];
 
-		for (name, ty) in &inputs {
-			asserts.push(quote!({
-				let validate = #chuchi::extractor::Validate::new(
-					#name, params, &mut state, resources
-				);
+		for (name, attrs, ty) in &inputs {
+			asserts.push(quote!(
+				#(#attrs)*
+				{
+					let validate = #chuchi::extractor::Validate::new(
+						#name, params, &mut state, resources
+					);
 
-				<#ty as #extractor_type>::validate(
-					validate
-				);
-			}));
+					<#ty as #extractor_type>::validate(
+						validate
+					);
+				}
+			));
 		}
 
 		quote!(
@@ -95,46 +98,52 @@ pub(crate) fn expand(
 		let mut call_route_args = vec![];
 		let mut prepare_extractors = vec![];
 
-		for (i, (name, ty)) in inputs.iter().enumerate() {
-			prepare_extractors.push(quote!({
-				let prepare = #chuchi::extractor::Prepare::new(
-					#name, req.header(), params, &mut state, resources
-				);
+		for (i, (name, attrs, ty)) in inputs.iter().enumerate() {
+			prepare_extractors.push(quote!(
+				#(#attrs)*
+				{
+					let prepare = #chuchi::extractor::Prepare::new(
+						#name, req.header(), params, &mut state, resources
+					);
 
-				let res = <#ty as #extractor_type>::prepare(
-					prepare
-				).await;
+					let res = <#ty as #extractor_type>::prepare(
+						prepare
+					).await;
 
-				match res {
-					Ok(res) => res,
-					Err(e) => {
-						return Err(#chuchi::Error::new(
-							#chuchi::extractor::ExtractorError::error_kind(&e),
-							#chuchi::extractor::ExtractorError::into_std(e)
-						));
+					match res {
+						Ok(res) => res,
+						Err(e) => {
+							return Err(#chuchi::Error::new(
+								#chuchi::extractor::ExtractorError::error_kind(&e),
+								#chuchi::extractor::ExtractorError::into_std(e)
+							));
+						}
 					}
 				}
-			}));
+			));
 
 			let i = Literal::usize_unsuffixed(i + 1);
 
-			call_route_args.push(quote!({
-				let extract = #chuchi::extractor::Extract::new(
-					prepared.#i, #name, &mut req, params, &state, resources
-				);
+			call_route_args.push(quote!(
+				#(#attrs)*
+				{
+					let extract = #chuchi::extractor::Extract::new(
+						prepared.#i, #name, &mut req, params, &state, resources
+					);
 
-				let res = <#ty as #extractor_type>::extract(
-					extract
-				);
+					let res = <#ty as #extractor_type>::extract(
+						extract
+					);
 
-				match res {
-					Ok(res) => res,
-					Err(err) => return Err(#chuchi::Error::new(
-						#chuchi::extractor::ExtractorError::error_kind(&err),
-						#chuchi::extractor::ExtractorError::into_std(err)
-					))
+					match res {
+						Ok(res) => res,
+						Err(err) => return Err(#chuchi::Error::new(
+							#chuchi::extractor::ExtractorError::error_kind(&err),
+							#chuchi::extractor::ExtractorError::into_std(err)
+						))
+					}
 				}
-			}));
+			));
 		}
 
 		let process_ret_ty = match output {

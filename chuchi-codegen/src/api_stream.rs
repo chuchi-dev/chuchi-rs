@@ -53,16 +53,19 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 	let valid_data_fn = {
 		let mut asserts = vec![];
 
-		for (name, ty) in &inputs {
-			asserts.push(quote!({
-				let validate = #chuchi::extractor::Validate::new(
-					#name, params, &mut state, resources
-				);
+		for (name, attrs, ty) in &inputs {
+			asserts.push(quote!(
+				#(#attrs)*
+				{
+					let validate = #chuchi::extractor::Validate::new(
+						#name, params, &mut state, resources
+					);
 
-				<#ty as #extractor_type>::validate(
-					validate
-				);
-			}));
+					<#ty as #extractor_type>::validate(
+						validate
+					);
+				}
+			));
 		}
 
 		quote!(
@@ -100,28 +103,32 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 		let mut handler_args = vec![];
 		let mut prepare_extractors = vec![];
 
-		for (idx, (name, ty)) in inputs.iter().enumerate() {
-			prepare_extractors.push(quote!({
-				let prepare = #chuchi::extractor::Prepare::new(
-					#name, header, params, &mut state, resources
-				);
+		for (idx, (name, attrs, ty)) in inputs.iter().enumerate() {
+			prepare_extractors.push(quote!(
+				#(#attrs)*
+				{
+					let prepare = #chuchi::extractor::Prepare::new(
+						#name, header, params, &mut state, resources
+					);
 
-				let res = <#ty as #extractor_type>::prepare(
-					prepare
-				).await;
+					let res = <#ty as #extractor_type>::prepare(
+						prepare
+					).await;
 
-				match res {
-					Ok(res) => res,
-					Err(e) => {
-						return Err(#stream_mod::util::extraction_error::<#stream_ty>(e));
+					match res {
+						Ok(res) => res,
+						Err(e) => {
+							return Err(#stream_mod::util::extraction_error::<#stream_ty>(e));
+						}
 					}
 				}
-			}));
+			));
 
 			let i = Literal::usize_unsuffixed(idx + 1);
 			let var_name = format_ident!("handler_arg_{idx}");
 
 			handler_args_vars.push(quote!(
+				#(#attrs)*
 				let #var_name = {
 					let extract = #chuchi::extractor::Extract::new(
 						prepared.#i, #name, &mut req, &params, &state, &resources
@@ -139,7 +146,7 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 					}
 				};
 			));
-			handler_args.push(quote!(#var_name));
+			handler_args.push(quote!(#(#attrs)* #var_name));
 		}
 
 		quote!(

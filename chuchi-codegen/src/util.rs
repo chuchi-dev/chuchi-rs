@@ -1,7 +1,8 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{
-	punctuated, Error, FnArg, Pat, Result, Signature, Type, TypeReference,
+	punctuated, Attribute, Error, FnArg, Pat, Result, Signature, Type,
+	TypeReference,
 };
 
 use proc_macro_crate::{crate_name, FoundCrate};
@@ -46,19 +47,22 @@ fn name_from_pattern(pat: &Pat) -> Option<String> {
 }
 
 #[allow(dead_code)]
+#[allow(clippy::type_complexity)]
 pub(crate) fn validate_inputs(
 	inputs: punctuated::Iter<'_, FnArg>,
-) -> Result<Vec<(String, Box<Type>)>> {
+) -> Result<Vec<(String, Vec<Attribute>, Box<Type>)>> {
 	let mut v = vec![];
 
 	for fn_arg in inputs {
-		let (name, ty) = match fn_arg {
+		let (name, attrs, ty) = match fn_arg {
 			FnArg::Receiver(r) => {
 				return Err(Error::new_spanned(r, "self not allowed"))
 			}
-			FnArg::Typed(t) => {
-				(name_from_pattern(&t.pat).unwrap_or_default(), t.ty.clone())
-			}
+			FnArg::Typed(t) => (
+				name_from_pattern(&t.pat).unwrap_or_default(),
+				t.attrs.clone(),
+				t.ty.clone(),
+			),
 		};
 
 		if let Some(reff) = ref_type(&ty) {
@@ -71,7 +75,7 @@ pub(crate) fn validate_inputs(
 			}
 		}
 
-		v.push((name, ty));
+		v.push((name, attrs, ty));
 	}
 
 	Ok(v)
