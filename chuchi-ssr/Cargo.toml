@@ -12,12 +12,12 @@ rust-version = "1.74"
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.0", features = ["rt", "fs", "sync", "macros"] }
-deno_core = "=0.275"
-deno_webidl = "0.147"
-deno_url = "0.147"
-deno_web = "0.178"
-deno_crypto = "0.161"
-deno_console = "0.147"
+deno_core = "0.299"
+deno_webidl = "0.164"
+deno_url = "0.164"
+deno_web = "0.195"
+deno_crypto = "0.178"
+deno_console = "0.164"
 chuchi = "0.1.0"
 aho-corasick = "1.0"
 tracing = "0.1"
