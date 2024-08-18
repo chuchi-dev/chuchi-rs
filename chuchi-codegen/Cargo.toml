@@ -1,7 +1,7 @@
 [package]
 name = "chuchi-codegen"
 description = "Codegen for chuchi"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Sören Meier <info@s-me.ch>"]
 repository = "https://github.com/chuchi-dev/chuchi-rs"
 edition = "2021"
