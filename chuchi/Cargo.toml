@@ -1,7 +1,7 @@
 [package]
 name = "chuchi"
 description = "Http async library based on hyper and tokio"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Sören Meier <info@soerenmeier.ch>"]
 repository = "https://github.com/chuchi-dev/chuchi-rs"
 edition = "2021"

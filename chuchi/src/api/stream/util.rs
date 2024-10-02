@@ -1,3 +1,5 @@
+use tracing::info;
+
 use crate::extractor::ExtractorError;
 
 use crate::api::error::Error;
@@ -32,6 +34,7 @@ pub fn error_to_data<S: Stream>(
 	match r {
 		Ok(_) => Ok(MessageData::null()),
 		Err(e) => {
+			info!(error = ?e, "stream response error");
 			// try to convert the error into a message
 			MessageData::serialize(e).map_err(|e| e.to_string().into())
 		}
