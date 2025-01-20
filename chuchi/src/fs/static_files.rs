@@ -350,7 +350,7 @@ impl IntoRoute for StaticFileOwned {
 
 	fn into_route(self) -> StaticFileRoute {
 		StaticFileRoute {
-			uri: self.uri.into(),
+			uri: self.uri.trim_end_matches('/').to_string().into(),
 			path: self.path.into(),
 			caching: self.caching.into(),
 		}
@@ -370,7 +370,11 @@ impl Route for StaticFileRoute {
 	fn path(&self) -> RoutePath {
 		RoutePath {
 			method: Some(Method::GET),
-			path: self.uri.clone(),
+			path: if self.uri.is_empty() {
+				"/".into()
+			} else {
+				self.uri.clone()
+			},
 		}
 	}
 
