@@ -80,7 +80,7 @@ impl Url {
 	/// Returns an iterator with the Item `(Cow<'_, str>, Cow<'_, str>)`
 	///
 	/// Key and values are percent decoded.
-	pub fn parse_query_pairs(&self) -> QueryIter {
+	pub fn parse_query_pairs(&self) -> QueryIter<'_> {
 		form_urlencoded::parse(self.query().unwrap_or("").as_bytes())
 	}
 }
