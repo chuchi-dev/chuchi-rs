@@ -22,11 +22,15 @@ impl Resources {
 	}
 
 	/// returns true if the data already existed
+	///
+	/// ## Panics
+	/// If there is more than one reference to the inner map.
 	pub(crate) fn insert<R>(&mut self, data: R) -> bool
 	where
 		R: Any + Send + Sync,
 	{
-		let map = Arc::get_mut(&mut self.inner).unwrap();
+		let map = Arc::get_mut(&mut self.inner)
+			.expect("Resources must not be shared before adding all resources");
 		map.insert(data.type_id(), Box::new(data)).is_some()
 	}
 

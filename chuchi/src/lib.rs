@@ -91,17 +91,20 @@ impl Chuchi {
 	where
 		A: ToSocketAddrs,
 	{
-		let addr = tokio::net::lookup_host(addr)
-			.await
-			.map_err(Error::from_server_error)?
-			.next()
-			.unwrap();
-		Ok(Self {
-			addr,
+		let mut me = Self::new_localhost();
+		me.update_addr(addr).await?;
+
+		Ok(me)
+	}
+
+	/// Creates a `Chuchi` instance with localhost as default address.
+	pub fn new_localhost() -> Self {
+		Self {
+			addr: ([127, 0, 0, 1], 0).into(),
 			resources: Resources::new(),
 			routes: Routes::new(),
 			configs: RequestConfigs::new(),
-		})
+		}
 	}
 
 	/// Returns a reference to the current data.
@@ -154,6 +157,7 @@ impl Chuchi {
 	///
 	/// ## Panics
 	/// If the size is zero.
+	// todo should this be called `set_request_size_limit`?
 	pub fn request_size_limit(&mut self, size_limit: usize) {
 		self.configs.size_limit(size_limit)
 	}
@@ -161,8 +165,25 @@ impl Chuchi {
 	/// Sets the request timeout. The default is 60 seconds.
 	///
 	/// This can be changed in every Route.
+	// todo should this be called `set_request_timeout`?
 	pub fn request_timeout(&mut self, timeout: Duration) {
 		self.configs.timeout(timeout)
+	}
+
+	/// Updates the socket address that the server will bind to.
+	///
+	/// This can only be called before the server is built.
+	pub async fn update_addr<A>(&mut self, addr: A) -> Result<()>
+	where
+		A: ToSocketAddrs,
+	{
+		let addr = tokio::net::lookup_host(addr)
+			.await
+			.map_err(Error::from_server_error)?
+			.next()
+			.unwrap();
+		self.addr = addr;
+		Ok(())
 	}
 
 	/// Binds to the address and prepares to serve requests.
