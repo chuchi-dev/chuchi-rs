@@ -24,7 +24,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - run: cargo test
+      - run: cargo test --workspace --exclude chuchi-ssr
 
   test_no_features:
     name: Test No features
@@ -40,7 +40,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - run: cargo test --no-default-features
+      - run: cargo test --workspace --exclude chuchi-ssr --no-default-features
 
   test_msrv_features:
     name: Test some features
@@ -56,7 +56,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - run: cargo test --features "json,fs,http1,http2,ws"
+      - run: cargo test --workspace --exclude chuchi-ssr --features "json,fs,http1,http2,ws"
 
   test_all_features:
     name: Test All features
@@ -72,6 +72,22 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
       - run: cargo test --all-features
+
+  test_ssr:
+    name: Test SSR
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - nightly
+          - 1.85.0
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - run: cargo test -p chuchi-ssr
 
   clippy:
     name: Run Clippy
