@@ -296,7 +296,7 @@ fn timed_out(msg: &'static str) -> io::Error {
 }
 
 fn join_error(error: task::JoinError) -> io::Error {
-	io::Error::new(io::ErrorKind::Other, error)
+	io::Error::other(error)
 }
 
 #[cfg(test)]

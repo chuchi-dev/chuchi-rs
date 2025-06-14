@@ -73,9 +73,9 @@ impl Stream for HyperBodyAsAsyncBytesStream {
 
 					Poll::Ready(Some(Ok(data)))
 				}
-				Poll::Ready(Some(Err(e))) => Poll::Ready(Some(Err(
-					io::Error::new(io::ErrorKind::Other, e),
-				))),
+				Poll::Ready(Some(Err(e))) => {
+					Poll::Ready(Some(Err(io::Error::other(e))))
+				}
 				Poll::Ready(None) => Poll::Ready(None),
 				Poll::Pending => Poll::Pending,
 			};
