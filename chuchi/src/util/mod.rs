@@ -12,9 +12,20 @@ use std::task::Poll;
 use tracing::error;
 
 mod header;
-use header::convert_hyper_parts_to_fire_header;
-pub use header::convert_hyper_req_to_fire_header;
+use header::convert_hyper_parts_to_chuchi_header;
+pub use header::convert_hyper_req_to_chuchi_header;
 pub(crate) use header::HeaderError;
+
+use crate::header::RequestHeader;
+
+/// Deprecated: Use `convert_hyper_req_to_chuchi_header` instead
+#[deprecated = "Use `convert_hyper_req_to_chuchi_header` instead"]
+pub fn convert_hyper_req_to_fire_header<B>(
+	req: &hyper::Request<B>,
+	address: SocketAddr,
+) -> Result<RequestHeader, HeaderError> {
+	convert_hyper_req_to_chuchi_header(req, address)
+}
 
 use crate::body::BodyHttp;
 
@@ -42,7 +53,7 @@ impl<O> Future for PinnedFuture<'_, O> {
 
 // private stuff
 
-pub(crate) fn convert_hyper_req_to_fire_req(
+pub(crate) fn convert_hyper_req_to_chuchi_req(
 	hyper_req: HyperRequest,
 	address: SocketAddr,
 	configs: &RequestConfigs,
@@ -53,13 +64,13 @@ pub(crate) fn convert_hyper_req_to_fire_req(
 	body.set_size_limit(Some(configs.size_limit));
 	body.set_timeout(Some(configs.timeout));
 
-	let header = convert_hyper_parts_to_fire_header(parts, address)?;
+	let header = convert_hyper_parts_to_chuchi_header(parts, address)?;
 
 	Ok(Request::new(header, body))
 }
 
 // // Response
-pub(crate) fn convert_fire_resp_to_hyper_resp(
+pub(crate) fn convert_chuchi_resp_to_hyper_resp(
 	response: Response,
 ) -> hyper::Response<BodyHttp> {
 	// debug_checks

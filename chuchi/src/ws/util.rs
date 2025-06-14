@@ -8,7 +8,7 @@ use crate::header::{
 	SEC_WEBSOCKET_KEY, SEC_WEBSOCKET_VERSION, UPGRADE,
 };
 use crate::server::HyperRequest;
-use crate::util::convert_hyper_req_to_fire_header;
+use crate::util::convert_hyper_req_to_chuchi_header;
 use crate::{Error, Response, Result};
 
 use tracing::error;
@@ -24,7 +24,7 @@ use base64::prelude::{Engine as _, BASE64_STANDARD};
 
 /// we need to expose this instead of inlining it in the macro since
 /// tracing logs the crate name and we wan't it to be associated with
-/// fire http instead of the crate that uses the macro
+/// chuchi instead of the crate that uses the macro
 #[doc(hidden)]
 pub fn upgrade_error(e: hyper::Error) {
 	error!("websocket upgrade error {:?}", e);
@@ -32,7 +32,7 @@ pub fn upgrade_error(e: hyper::Error) {
 
 /// we need to expose this instead of inlining it in the macro since
 /// tracing logs the crate name and we wan't it to be associated with
-/// fire http instead of the crate that uses the macro
+/// chuchi instead of the crate that uses the macro
 #[doc(hidden)]
 pub fn log_websocket_return(r: impl LogWebSocketReturn) {
 	if r.should_log_error() {
@@ -42,7 +42,7 @@ pub fn log_websocket_return(r: impl LogWebSocketReturn) {
 
 /// we need to expose this instead of inlining it in the macro since
 /// tracing logs the crate name and we wan't it to be associated with
-/// fire http instead of the crate that uses the macro
+/// chuchi instead of the crate that uses the macro
 #[doc(hidden)]
 pub fn log_extractor_error(r: impl ExtractorError) {
 	let err = r.into_std();
@@ -102,7 +102,7 @@ pub fn hyper_req_to_header(
 	req: &mut HyperRequest,
 	address: SocketAddr,
 ) -> Result<RequestHeader> {
-	convert_hyper_req_to_fire_header(req, address).map_err(|e| {
+	convert_hyper_req_to_chuchi_header(req, address).map_err(|e| {
 		Error::new(
 			ClientErrorKind::BadRequest,
 			format!("failed to convert hyper request {:?}", e),

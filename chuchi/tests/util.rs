@@ -12,9 +12,9 @@ macro_rules! spawn_server {
 		let socket_addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), 0);
 		let mut $builder = chuchi::build(socket_addr).await.unwrap();
 		let _ = $block;
-		let fire = $builder.build().await.unwrap();
-		let addr = fire.local_addr().unwrap();
-		tokio::task::spawn(fire.run());
+		let chuchi_server = $builder.build().await.unwrap();
+		let addr = chuchi_server.local_addr().unwrap();
+		tokio::task::spawn(chuchi_server.run());
 
 		addr
 	}};

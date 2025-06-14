@@ -78,7 +78,7 @@ pub async fn build(addr: impl ToSocketAddrs) -> Result<Chuchi> {
 	Chuchi::new(addr).await
 }
 
-/// `FireBuilder` gathers all materials needed to light a fire (start a server).
+/// `Chuchi` gathers all materials needed to start a server.
 pub struct Chuchi {
 	addr: SocketAddr,
 	resources: Resources,
@@ -116,7 +116,7 @@ impl Chuchi {
 		self.resources.insert(resource);
 	}
 
-	/// Adds a `RawRoute` to the fire.
+	/// Adds a `RawRoute` to the chuchi.
 	pub fn add_raw_route<R>(&mut self, route: R)
 	where
 		R: RawRoute + 'static,
@@ -127,7 +127,7 @@ impl Chuchi {
 		self.routes.push_raw(path, route)
 	}
 
-	/// Adds a `Route` to the fire.
+	/// Adds a `Route` to the chuchi.
 	pub fn add_route<R>(&mut self, route: R)
 	where
 		R: IntoRoute + 'static,
@@ -139,7 +139,7 @@ impl Chuchi {
 		self.routes.push(path, route)
 	}
 
-	/// Adds a `Catcher` to the fire.
+	/// Adds a `Catcher` to the chuchi.
 	pub fn add_catcher<C>(&mut self, catcher: C)
 	where
 		C: Catcher + 'static,
@@ -167,7 +167,7 @@ impl Chuchi {
 
 	/// Binds to the address and prepares to serve requests.
 	///
-	/// You need to call ignite on the `Fire` so that it starts handling
+	/// You need to call run on the `ChuchiServer` so that it starts handling
 	/// requests.
 	pub async fn build(self) -> Result<ChuchiServer> {
 		let wood = Arc::new(ServerShared::new(
@@ -184,7 +184,7 @@ impl Chuchi {
 		})
 	}
 
-	/// Ignites the fire, which starts the server.
+	/// Starts the chuchi server.
 	///
 	/// ## Note
 	/// Under normal conditions this function should run forever.
@@ -193,7 +193,7 @@ impl Chuchi {
 		server.run().await
 	}
 
-	/// Ignites the fire, and spawns it on a new tokio task.
+	/// Starts the chuchi server, and spawns it on a new tokio task.
 	///
 	/// ## Note
 	/// Under normal conditions this task should run forever.
@@ -201,11 +201,11 @@ impl Chuchi {
 		tokio::spawn(async move { self.run().await.unwrap() })
 	}
 
-	/// Creates a FirePit without starting the server.
+	/// Creates a `ChuchiShared` without starting the server.
 	///
-	/// In most cases you should use `build` and then call `pit` on the `Fire`.
+	/// In most cases you should use `build` and then call `shared` on the `ChuchiServer`.
 	///
-	/// Creating a `FirePit` might be useful for testing or if you want to
+	/// Creating a `ChuchiShared` might be useful for testing or if you want to
 	/// manually create a server.
 	pub fn into_shared(self) -> ChuchiShared {
 		let wood = Arc::new(ServerShared::new(
@@ -218,7 +218,7 @@ impl Chuchi {
 	}
 }
 
-/// A Fire that is ready to be ignited.
+/// A `Server` which is ready to be started.
 pub struct ChuchiServer {
 	shared: Arc<ServerShared>,
 	server: Server,

@@ -1,7 +1,7 @@
 use crate::routes::Routes;
 use crate::server::HyperBody;
 use crate::util::{
-	convert_fire_resp_to_hyper_resp, convert_hyper_req_to_fire_req,
+	convert_chuchi_resp_to_hyper_resp, convert_hyper_req_to_chuchi_req,
 };
 use crate::{Error, Request, Resources};
 
@@ -47,7 +47,7 @@ impl RequestConfigs {
 	}
 }
 
-// IncredientsForAFire
+// IncredientsForAChuchi
 pub(crate) struct ServerShared {
 	data: Resources,
 	routes: Routes,
@@ -141,7 +141,7 @@ async fn route_hyper_inner(
 		info!(?status_code, "{method} {uri} | {status_code}");
 	}
 
-	let hyper_resp = convert_fire_resp_to_hyper_resp(resp);
+	let hyper_resp = convert_chuchi_resp_to_hyper_resp(resp);
 
 	Ok(hyper_resp)
 }
@@ -174,7 +174,8 @@ async fn route_hyper_req(
 		None
 	};
 
-	let req = convert_hyper_req_to_fire_req(hyper_req, address, wood.configs());
+	let req =
+		convert_hyper_req_to_chuchi_req(hyper_req, address, wood.configs());
 	let mut req = match req {
 		Ok(r) => r,
 		Err(e) => {

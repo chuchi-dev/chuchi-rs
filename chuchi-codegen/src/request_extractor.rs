@@ -17,16 +17,16 @@ pub fn expand(input: &DeriveInput) -> Result<proc_macro::TokenStream> {
 	Ok(impl_extractor(&chuchi, &quote!(#ty #ty_generics)).into())
 }
 
-pub fn impl_extractor(fire: &TokenStream, ty: &TokenStream) -> TokenStream {
+pub fn impl_extractor(chuchi: &TokenStream, ty: &TokenStream) -> TokenStream {
 	quote!(
-		impl<'a> #fire::extractor::Extractor<'a, #ty> for #ty {
+		impl<'a> #chuchi::extractor::Extractor<'a, #ty> for #ty {
 			type Error = std::convert::Infallible;
 			type Prepared = ();
 
-			fn validate(_validate: #fire::extractor::Validate<'_>) {}
+			fn validate(_validate: #chuchi::extractor::Validate<'_>) {}
 
 			fn prepare(
-				_prepare: #fire::extractor::Prepare<'_>,
+				_prepare: #chuchi::extractor::Prepare<'_>,
 			) -> std::pin::Pin<
 				Box<
 					dyn std::future::Future<
@@ -38,7 +38,7 @@ pub fn impl_extractor(fire: &TokenStream, ty: &TokenStream) -> TokenStream {
 			}
 
 			fn extract(
-				extract: #fire::extractor::Extract<'a, '_, Self::Prepared, #ty>,
+				extract: #chuchi::extractor::Extract<'a, '_, Self::Prepared, #ty>,
 			) -> std::result::Result<Self, Self::Error>
 			where
 				Self: Sized,

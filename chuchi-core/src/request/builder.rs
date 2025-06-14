@@ -10,7 +10,7 @@ use std::net::SocketAddr;
 
 /// A builder to create a `Request`.
 ///
-/// This is only useful for direct request calling on a FirePit.
+/// This is only useful for direct request calling on a ChuchiShared.
 #[derive(Debug)]
 pub struct RequestBuilder {
 	header: RequestHeader,

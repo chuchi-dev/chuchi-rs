@@ -18,7 +18,7 @@ async fn main() {
 	let mut server = chuchi::build("0.0.0.0:3000").await
 		.expect("Failed to parse address");
 
-	server.add_resource(GlobalName("fire".into()));
+	server.add_resource(GlobalName("chuchi".into()));
 	server.add_route(root);
 
 	server.run().await.unwrap();

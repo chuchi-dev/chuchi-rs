@@ -33,7 +33,7 @@ async fn all(req: &mut Request, ssr: &JsServer) -> Result<Response, Error> {
 #[tokio::main]
 async fn main() {
 	tracing_subscriber::fmt()
-		.with_env_filter("error,fire_http=trace")
+		.with_env_filter("error,chuchi=trace")
 		.init();
 
 	let mut server = chuchi::build("0.0.0.0:3000").await.unwrap();

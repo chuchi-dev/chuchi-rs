@@ -79,7 +79,7 @@ pub struct ChuchiService {
 }
 
 impl ChuchiService {
-	/// Creates a new FireService which can be passed to a hyper server.
+	/// Creates a new ChuchiService which can be passed to a hyper server.
 	pub fn new(pit: ChuchiShared, address: SocketAddr) -> Self {
 		Self {
 			shared: pit.inner,

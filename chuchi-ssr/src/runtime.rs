@@ -115,13 +115,13 @@ impl deno_web::TimersPermission for TimersAllowed {
 }
 
 extension!(
-	fire_ssr,
+	chuchi_ssr,
 	deps = [deno_webidl, deno_url, deno_web, deno_crypto],
 	ops = [
 		op_tracing_trace, op_tracing_debug, op_tracing_info, op_tracing_warn, op_tracing_error,
 		op_get_options, op_next_request, op_send_response, op_fetch
 	],
-	esm_entry_point = "ext:fire_ssr/ext_entry.js",
+	esm_entry_point = "ext:chuchi_ssr/ext_entry.js",
 	esm = [dir "js", "ext_entry.js"]
 );
 
@@ -143,7 +143,7 @@ impl Runtime {
 					None,
 				),
 				deno_crypto::deno_crypto::init_ops_and_esm(None),
-				fire_ssr::init_ops_and_esm(),
+				chuchi_ssr::init_ops_and_esm(),
 			],
 			module_loader: Some(Rc::new(StaticModuleLoader { root: base_dir })),
 			..Default::default()
@@ -163,7 +163,7 @@ impl Runtime {
 
 		let mod_id = runtime
 			.load_main_es_module_from_code(
-				&"file:///__fire_ssr_entry.js".parse().unwrap(),
+				&"file:///__chuchi_ssr_entry.js".parse().unwrap(),
 				ascii_str_include!("../js/main.js"),
 			)
 			.await

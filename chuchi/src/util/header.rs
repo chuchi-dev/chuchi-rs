@@ -18,7 +18,7 @@ pub enum HeaderError {
 
 type Result<T> = std::result::Result<T, HeaderError>;
 
-pub fn convert_hyper_parts_to_fire_header(
+pub fn convert_hyper_parts_to_chuchi_header(
 	parts: hyper::http::request::Parts,
 	address: SocketAddr,
 ) -> Result<RequestHeader> {
@@ -33,7 +33,7 @@ pub fn convert_hyper_parts_to_fire_header(
 	})
 }
 
-pub fn convert_hyper_req_to_fire_header<B>(
+pub fn convert_hyper_req_to_chuchi_header<B>(
 	req: &hyper::Request<B>,
 	address: SocketAddr,
 ) -> Result<RequestHeader> {

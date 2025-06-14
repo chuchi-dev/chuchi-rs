@@ -59,10 +59,10 @@ impl PartialEq<&str> for Etag {
 ///
 /// ## Example
 /// ```ignore
-/// # use fire_http as fire;
-/// use fire::{get, Request};
-/// use fire::fs::Caching;
-/// use fire::into::IntoResponse;
+/// # use chuchi;
+/// use chuchi::{get, Request};
+/// use chuchi::fs::Caching;
+/// use chuchi::into::IntoResponse;
 /// use std::cell::LazyCell;
 ///
 ///

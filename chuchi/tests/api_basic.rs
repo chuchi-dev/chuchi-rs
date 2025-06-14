@@ -105,8 +105,8 @@ async fn init() -> ChuchiSharedApi {
 	server.add_route(test);
 	server.add_route(user);
 
-	let fire = server.build().await.unwrap();
-	ChuchiSharedApi::new(fire.shared())
+	let chuchi_server = server.build().await.unwrap();
+	ChuchiSharedApi::new(chuchi_server.shared())
 }
 
 #[traced_test]

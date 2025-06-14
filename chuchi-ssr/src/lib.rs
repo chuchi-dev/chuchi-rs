@@ -92,7 +92,7 @@ impl JsServer {
 	/// Call this if you wan't to route requests internally without going over
 	/// the http stack
 	///
-	/// You need to pass a FirePit
+	/// You need to pass a ChuchiShared
 	pub async fn route_internally(&self, shared: ChuchiShared) {
 		self.pool.send_pit(shared).await;
 	}

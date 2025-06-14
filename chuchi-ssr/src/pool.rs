@@ -87,8 +87,8 @@ async fn pool_handler(
 			// don't
 			msg = rx.recv() => {
 				let msg = match msg.unwrap() {
-					PoolMsg::SetShared(fire_pit) => {
-						pit = Some(fire_pit);
+					PoolMsg::SetShared(chuchi_shared) => {
+						pit = Some(chuchi_shared);
 						continue
 					},
 					PoolMsg::Request(r) => r

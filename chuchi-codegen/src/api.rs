@@ -168,24 +168,24 @@ pub(crate) fn expand(args: ApiArgs, item: ItemFn) -> Result<TokenStream> {
 				type __Error = #ty_as_req::Error;
 
 				async fn route_to_body(
-					fire_req: &mut #chuchi::Request,
+					chuchi_req: &mut #chuchi::Request,
 					params: &#chuchi::routes::PathParams,
 					resources: &#chuchi::resources::Resources
 				) -> std::result::Result<(
 					#chuchi_api::response::ResponseSettings,
 					#chuchi::Body
 				), __Error> {
-					#chuchi_api::util::setup_request::<#req_ty>(fire_req)?;
+					#chuchi_api::util::setup_request::<#req_ty>(chuchi_req)?;
 
 					let req = #chuchi_api::util::deserialize_req::<#req_ty>(
-						fire_req
+						chuchi_req
 					).await?;
 
 					#[allow(unused_mut, dead_code)]
 					let mut state = #chuchi::state::State::new();
 					state.insert(#chuchi_api::response::ResponseSettings::new_for_state());
 
-					let header = fire_req.header();
+					let header = chuchi_req.header();
 
 					// prepare extractions
 					let prepared = (0,// this is a placeholder
