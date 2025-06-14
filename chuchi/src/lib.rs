@@ -256,7 +256,13 @@ pub struct ChuchiShared {
 }
 
 impl ChuchiShared {
+	#[deprecated = "Use `ChuchiShared::resources` instead."]
 	pub fn data(&self) -> &Resources {
+		self.inner.data()
+	}
+
+	/// Returns a reference to the resources.
+	pub fn resources(&self) -> &Resources {
 		self.inner.data()
 	}
 

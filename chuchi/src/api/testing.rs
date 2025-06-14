@@ -18,8 +18,14 @@ impl ChuchiSharedApi {
 		Self { inner }
 	}
 
+	#[deprecated = "Use `ChuchiSharedApi::resources` instead"]
 	pub fn data(&self) -> &Resources {
-		self.inner.data()
+		self.inner.resources()
+	}
+
+	/// Returns a reference to the resources.
+	pub fn resources(&self) -> &Resources {
+		self.inner.resources()
 	}
 
 	/// Routes the request to normal routes and returns their result.
