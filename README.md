@@ -4,6 +4,14 @@
 
 A simple http server library.
 
+## Future
+This crate will be *deprecated* and you should migrate to axum. There is a guide in [migrate-to-axum.md](migrate-to-axum.md). It is written by AI based on an active project migration. Doing a first migration draft
+with AI should be possible.
+
+Axum has almost all features and more, supports tower Service (albeit at first maybe a bit more complicated) but
+makes reuability in the ecosystem way easier.
+
+
 ## Basic get request
 
 ```rust no_run
